@@ -33,7 +33,7 @@ do athletes handle anger differently than non-athletes?
 ## How do psychologists measure anger management?
 
 One way: \newline
-questionnaire called STATXI-2 which produces the anger expression (AE) index.
+questionnaire called STATXI-2 (Spielberger et al., 1999) which produces the anger expression (AE) index.
 
 AE:\newline
 overall estimate of the person’s tendencies to express anger either outwardly toward other people, or inwardly toward herself
