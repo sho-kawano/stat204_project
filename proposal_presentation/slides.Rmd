@@ -80,19 +80,45 @@ table(Sex, Athlete)
 + Are there relationships among AO, AI, CO, CI?
 
 # EDA 
+<style>
+.container{
+    display: flex;
+}
+.col{
+    flex: 1;
+}
+</style>
 
-```{r, echo=FALSE}
-par(mfrow = c(1, 3))
+<div class="container">
+<div class="col">
+
+
+
+```{r, echo=FALSE, fig.width=4, warning=FALSE}
+library(ggpubr)
+#par(mfrow = c(1, 3))
 levels(data$Sex) <- c("female", "male")
 levels(data$Athlete) <- c("Non-athlete", "Athlete")
-boxplot(AE ~ Sex, data = data)
-boxplot(AE ~ Athlete, data = data)
-boxplot(AE ~ Factors, data = data)
-# boxplot1 <- ggplot(data, aes(y = AE, fill = Sex)) + geom_boxplot()
-# boxplot2 <- ggplot(data, aes(y = AE, fill = Athlete)) + geom_boxplot()
-# boxplot3 <- ggplot(data, aes(y = AE, fill = Factors)) + geom_boxplot()
-# grid.arrange(boxplot1, boxplot2, boxplot3)
+# boxplot(AE ~ Sex, data = data)
+# boxplot(AE ~ Athlete, data = data)
+# boxplot(AE ~ Factors, data = data)
+
+boxplot1 <- ggplot(data, aes(y = AE, fill = Sex)) + geom_boxplot() 
+boxplot2 <- ggplot(data, aes(y = AE, fill = Athlete)) + geom_boxplot() 
+ggarrange(boxplot1, boxplot2, #bp + rremove("x.text"), 
+          # labels = c("A", "B", "C"),
+          ncol = 1, nrow = 2)
 ```
+</div>
+<div class="col">
+
+```{r fig.width=4, echo=FALSE}
+
+data %>% ggplot(aes(y = AE, fill = Factors)) + geom_boxplot()
+```
+
+</div>
+</div>
 
 # EDA
 ```{r, echo=FALSE}
@@ -120,7 +146,7 @@ Then two main questions reduce to
 
 If so, how do they differ?
 
-# Explore Relationships among AO, AI, CO, CI
+# Explore Relationships
 Can we explain 'AO' by other variables?
 
 ```{r, echo=FALSE}
