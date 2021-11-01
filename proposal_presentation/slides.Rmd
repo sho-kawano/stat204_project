@@ -1,0 +1,32 @@
+---
+title: "Project Proposal"
+author: "Seokjun Choi and Sho Kawano"
+date: "`r Sys.Date()`"
+output:
+  revealjs::revealjs_presentation: 
+    theme: serif
+    incremental: false
+    reveal_options:
+      slideNumber: T
+---
+
+```{r include=FALSE}
+library(tidyverse)
+setwd("~/Google Drive/UCSC/Coursework/204/presentation")
+data = read.csv("angry_moods.csv") %>% 
+          mutate(Sex = ifelse(Sex==2, 0, 1)) %>% 
+          mutate(Athlete = ifelse(Athlete==2, 0, 1))
+```
+
+
+## Project: Athletes, Sex, and Anger  
+
+- We want to examine whether athletes handle anger differently than non-athletes 
+- We also 
+- We will use Survey data provided by Emily Zitek and Mindy Ater of Rice University
+
+```{r echo=FALSE}
+data %>% head()
+```
+
+
