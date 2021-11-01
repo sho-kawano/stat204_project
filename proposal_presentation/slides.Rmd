@@ -12,6 +12,7 @@ output:
 
 ```{r include=FALSE}
 library(tidyverse)
+# library(gridExtra)
 data = read.csv("angry_moods.csv") %>% 
           mutate(Sex = ifelse(Sex==2, 0, 1)) %>% 
           mutate(Athlete = ifelse(Athlete==2, 0, 1))
@@ -40,12 +41,12 @@ overall estimate of the person’s tendencies to express anger either outwardly 
 
 ## Components of Anger Expression Index
 
-$$AE = AO + AI - CO - CI +48$$ 
+$AE = AO + AI - CO - CI +48$
 
 + Anger-Out (AO):  how much a person expresses their anger in an outwardly negative and poorly controlled manner.
 + Anger-In (AI): the extent to which people hold things in or suppress anger when they are angry or furious.
 + Control-Out (CO): measures how much effort does the person expend to control anger.
-+ Control-In (CI): measures how often a person attempts to relax, calm down,.
++ Control-In (CI): measures how often a person attempts to relax, calm down.
 
 # Data Description
 
@@ -55,14 +56,19 @@ Survey data provided from Rice University with the questionnaire to gauge AE. \n
 
 ```{r, echo=FALSE}
 data %>% head() %>% as.data.frame()
+data$Sex <- factor(data$Sex)
+data$Athlete <- factor(data$Athlete)
+names(data)[3:7] <- c("AO", "AI", "CO", "CI", "AE")
+data$Factors <- factor(
+  paste(as.character(data$Sex), as.character(data$Athlete), sep = "_"))
+levels(data$Factors) <- c("F_N", "F_A", "M_N", "M_A")
 ```
 
 Contingency table:
 
 ```{r, echo=FALSE}
-Sex=data$Sex
-Athlete = data$Athlete
-
+Sex <- data$Sex
+Athlete <- data$Athlete
 table(Sex, Athlete)
 ```
 
@@ -75,15 +81,52 @@ table(Sex, Athlete)
 
 # EDA 
 
-Box plots 
+```{r, echo=FALSE}
+par(mfrow = c(1, 3))
+levels(data$Sex) <- c("female", "male")
+levels(data$Athlete) <- c("Non-athlete", "Athlete")
+boxplot(AE ~ Sex, data = data)
+boxplot(AE ~ Athlete, data = data)
+boxplot(AE ~ Factors, data = data)
+# boxplot1 <- ggplot(data, aes(y = AE, fill = Sex)) + geom_boxplot()
+# boxplot2 <- ggplot(data, aes(y = AE, fill = Athlete)) + geom_boxplot()
+# boxplot3 <- ggplot(data, aes(y = AE, fill = Factors)) + geom_boxplot()
+# grid.arrange(boxplot1, boxplot2, boxplot3)
+```
+
+# EDA
+```{r, echo=FALSE}
+par(mfrow = c(2, 2))
+boxplot(AO ~ Factors, data = data)
+boxplot(AI ~ Factors, data = data)
+boxplot(CO ~ Factors, data = data)
+boxplot(CI ~ Factors, data = data)
+```
+
 
 # Two-Way ANOVA 
 
-Seokjun please add content
+\[AE = \mu + \alpha_i + \beta_j + \gamma_{i,j} +\epsilon \]
+where \(\epsilon \sim Normal(0, \sigma^2)\) for fixed $\sigma^2$
 
-# Explore Relationships: AO, AI, CO, CI
+- $\alpha_i$: effect of 'gender' (i = 0(female), 1(male))
+- $\beta_i$: effect of 'being an athlete' (i = 0(non-athlete), 1(athlete))
+- $\gamma_{i,j}$: interaction between gender and being an athlete
 
-Pair plots 
+Then two main questions reduce to
+
+- $\alpha_0 \neq \alpha_1$?
+- $\beta_0 \neq \beta_1$?
+
+If so, how do they differ?
+
+# Explore Relationships among AO, AI, CO, CI
+Can we explain 'AO' by other variables?
+
+```{r, echo=FALSE}
+par(mfrow = c(1, 1))
+pairs(data[, 3:6])
+```
 
 # Discussion 
 

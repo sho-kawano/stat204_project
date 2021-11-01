@@ -16,26 +16,55 @@ data
 # data$Gender<-factor(ifelse(data$Gender==1, "male", "female"))
 # data$Athlete<-factor(ifelse(data$Athlete==1, "athletes", "non-athletes"))
 
+#mosicplot?
+
 #boxplots
-ggplot(data, aes(x = AE, fill = factorlab)) + geom_boxplot()
-ggplot(data, aes(x = AO, fill = factorlab)) + geom_boxplot()
-ggplot(data, aes(x = AI, fill = factorlab)) + geom_boxplot()
-ggplot(data, aes(x = CO, fill = factorlab)) + geom_boxplot()
-ggplot(data, aes(x = CI, fill = factorlab)) + geom_boxplot()
-
-ggplot(data, aes(x = AE, fill = factorlab)) + geom_histogram(bin = 20)
-ggplot(data, aes(x = AO, fill = factorlab)) + geom_histogram(bin = 20)
-ggplot(data, aes(x = AI, fill = factorlab)) + geom_histogram(bin = 20)
-ggplot(data, aes(x = CO, fill = factorlab)) + geom_histogram(bin = 20)
-ggplot(data, aes(x = CI, fill = factorlab)) + geom_histogram(bin = 20)
-
-ggplot(data, aes(x = AE, color = factorlab)) + geom_histogram(bin = 20, , alpha=0.5, position="identity")
-ggplot(data, aes(x = AO, color = factorlab)) + geom_histogram(bin = 20, , alpha=0.5, position="identity")
-ggplot(data, aes(x = AI, color = factorlab)) + geom_histogram(bin = 20, , alpha=0.5, position="identity")
-ggplot(data, aes(x = CO, color = factorlab)) + geom_histogram(bin = 20, , alpha=0.5, position="identity")
-ggplot(data, aes(x = CI, color = factorlab)) + geom_histogram(bin = 20, , alpha=0.5, position="identity")
+#marginal
+ggplot(data, aes(y = AE, fill = Sex)) + geom_boxplot() # <-
+ggplot(data, aes(y = AE, fill = Athlete)) + geom_boxplot() # <-
+#joint(???)
+ggplot(data, aes(y = AE, fill = factorlab)) + geom_boxplot() # <-?
 
 
+ggplot(data, aes(y = AO, fill = factorlab)) + geom_boxplot()
+ggplot(data, aes(y = AI, fill = factorlab)) + geom_boxplot()
+ggplot(data, aes(y = CO, fill = factorlab)) + geom_boxplot()
+ggplot(data, aes(y = CI, fill = factorlab)) + geom_boxplot()
+
+
+#histograms
+ggplot(data, aes(x = AE, fill = factorlab)) + geom_histogram(bins = 20) #stacked
+ggplot(data, aes(x = AO, fill = factorlab)) + geom_histogram(bins = 20) #stacked
+ggplot(data, aes(x = AI, fill = factorlab)) + geom_histogram(bins = 20) #stacked
+ggplot(data, aes(x = CO, fill = factorlab)) + geom_histogram(bins = 20) #stacked
+ggplot(data, aes(x = CI, fill = factorlab)) + geom_histogram(bins = 20) #stacked
+
+ggplot(data, aes(x = AE, fill = factorlab)) + 
+    geom_histogram(alpha=0.5, position="identity", bins = 20)
+ggplot(data, aes(x = AO, fill = factorlab)) + 
+    geom_histogram(alpha=0.5, position="identity", bins = 20)
+ggplot(data, aes(x = AI, fill = factorlab)) + 
+    geom_histogram(alpha=0.5, position="identity", bins = 20)
+ggplot(data, aes(x = CO, fill = factorlab)) + 
+    geom_histogram(alpha=0.5, position="identity", bins = 20)
+ggplot(data, aes(x = CI, fill = factorlab)) + 
+    geom_histogram(alpha=0.5, position="identity", bins = 20)
+
+#density
+ggplot(data, aes(x = AE, fill = factorlab)) + 
+    geom_density(alpha=0.5, position="identity") + ylim(0, 0.05)
+
+ggplot(data, aes(x = AO, fill = factorlab)) + 
+    geom_density(alpha=0.5, position="identity") + ylim(0, 0.15)
+ggplot(data, aes(x = AI, fill = factorlab)) + 
+    geom_density(alpha=0.5, position="identity") + ylim(0, 0.15)
+ggplot(data, aes(x = CO, fill = factorlab)) + 
+    geom_density(alpha=0.5, position="identity") + ylim(0, 0.15)
+ggplot(data, aes(x = CI, fill = factorlab)) + 
+    geom_density(alpha=0.5, position="identity") + ylim(0, 0.15)
+
+
+#scatterplot
 ggplot(angry, aes(x = AO, after_stat(density))) +
     geom_histogram(bins = 20, col=factorlab) +
     geom_density(fill = "blue", alpha = 0.2)
@@ -58,15 +87,11 @@ ggplot(angry, aes(x = AE, after_stat(density))) +
     facet_wrap(~Gender + Sports, scales = "fixed")
 
 
-boxplot(AE ~ Gender + Sports, data = angry)
-boxplot(AE ~ Gender + Sports, data = angry)
+# for final goal
+library(GGally)
+pairs(data[, 3:6]) # <- include this
 
-length(which(angry$Gender == "female" & angry$Sports == "athletes"))
-length(which(angry$Gender == "male" & angry$Sports == "athletes"))
-length(which(angry$Gender == "female" & angry$Sports == "non-athletes"))
-length(which(angry$Gender == "male" & angry$Sports == "non-athletes"))
-length(which(angry$Gender == "male"))
-length(which(angry$Gender == "female"))
-length(which(angry$Sports == "athletes"))
-length(which(angry$Sports == "non-athletes"))
-pairs(angry[, 3:6])
+data$factorlab_sim <- data$factorlab
+levels(data$factorlab_sim) <- c("F-A","F-N","M-A","M-N")
+ggpairs(data, aes(colour=factorlab_sim, alpha = 0.4),
+    columns = c("AE", "AO", "AI", "CO", "CI"))
