@@ -158,3 +158,28 @@ pairs(data[, 3:6])
 
 Any questions? Comments? Suggestions? 
 
+
+# Additional plots
+```{r}
+density_est_AE <- ggplot(data, aes(x = AE)) + 
+    geom_density(fill="black") + ylim(0, 0.04)
+density_est_AE_eachfactor <- ggplot(data, aes(x = AE, fill = Factors)) + 
+    geom_density(alpha=0.5, position="identity") + ylim(0, 0.04)
+
+  
+ggarrange(density_est_AE, density_est_AE_eachfactor,
+          #bp + rremove("x.text"),
+          # labels = c("A", "B", "C"),
+          ncol = 1, nrow = 2)
+```
+
+# Additional plots2
+
+```{r}
+hist_AE <- ggplot(data, aes(x = AE)) + geom_histogram(bins = 20)
+hist_AE_col <- ggplot(data, aes(x = AE, fill = Factors)) + geom_histogram(bins = 20)
+ggarrange(hist_AE, hist_AE_col,
+          #bp + rremove("x.text"),
+          # labels = c("A", "B", "C"),
+          ncol = 1, nrow = 2)
+```

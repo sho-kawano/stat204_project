@@ -51,8 +51,11 @@ ggplot(data, aes(x = CI, fill = factorlab)) +
     geom_histogram(alpha=0.5, position="identity", bins = 20)
 
 #density
+ggplot(data, aes(x = AE)) + 
+    geom_density(fill="black") + ylim(0, 0.04)
 ggplot(data, aes(x = AE, fill = factorlab)) + 
-    geom_density(alpha=0.5, position="identity") + ylim(0, 0.05)
+    geom_density(alpha=0.5, position="identity") + ylim(0, 0.04)
+
 
 ggplot(data, aes(x = AO, fill = factorlab)) + 
     geom_density(alpha=0.5, position="identity") + ylim(0, 0.15)
