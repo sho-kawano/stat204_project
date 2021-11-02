@@ -141,8 +141,8 @@ where \(\epsilon \sim Normal(0, \sigma^2)\) for fixed $\sigma^2$
 
 Then two main questions reduce to
 
-- $\alpha_0 \neq \alpha_1$?
-- $\beta_0 \neq \beta_1$?
+- $\alpha_0 = \alpha_1$? or $\alpha_0 \neq \alpha_1$?
+- $\beta_0 = \beta_1$? or $\beta_0 \neq \beta_1$?
 
 If so, how do they differ?
 
