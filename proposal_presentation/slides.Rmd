@@ -50,8 +50,8 @@ $AE = AO + AI - CO - CI +48$
 
 # Data Description
 
-Survey data provided from Rice University with the questionnaire to gauge AE. \newline
-48 females and 30 males, and 25 athletes and 53 non-athletes.
+Survey data provided from Rice University with the questionnaire to gauge AE.
+There are 48 females and 30 males, and 25 athletes and 53 non-athletes.
 
 
 ```{r, echo=FALSE}
