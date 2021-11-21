@@ -1,5 +1,5 @@
 # ?read.csv
-new_athlete <- read.csv("reduced_athlete_nonathlete_MH_survey.csv",
+new_athlete <- read.csv("MH_Survey_reduced_data_processed_NA.csv",
     na.strings = "NA")
 head(new_athlete)
 summary(new_athlete)
@@ -28,10 +28,14 @@ plot(MHC_SF_overall ~ hours_sleep, data = new_athlete)
 plot(MHC_SF_overall ~ shielded, data = new_athlete)
 plot(MHC_SF_overall ~ weeks_social_distancing, data = new_athlete)
 
+
+qqnorm(new_athlete$hours_sleep)
+qqline(new_athlete$hours_sleep)
+
 summary(lm(MHC_SF_overall ~ athlete + gender, data = new_athlete))
 summary(lm(MHC_SF_overall ~ athlete + gender + age_group + marital + smoking + five_fruit_and_veg + hours_sleep + shielded + weeks_social_distancing, data = new_athlete))
 
-
+summary(lm(MHC_SF_overall ~ age_group + five_fruit_and_veg + hours_sleep, data = new_athlete)) 
 
 plot(social_wellbeing ~ gender, data = new_athlete)
 plot(social_wellbeing ~ athlete, data = new_athlete)
