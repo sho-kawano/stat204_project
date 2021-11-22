@@ -73,12 +73,40 @@ summary(model_step2)
 
 
 model_step3 <- lm(MHC_SF_OVERALL ~ gender + age_group + 
-    fivfruitveg + shielded + week_soc_distancing +
-    athlete + AIMS_TOTAL + HADS_OVERALL + RES_TOTAL + LONE_TOTAL + athlete, data = data)
+    fivfruitveg + shielded + hour_sleep +
+    athlete + AIMS_TOTAL + RES_TOTAL + LONE_TOTAL + athlete, data = data) #HADS_OVERALL
 summary(model_step3) #<<<<<<
 par(mfrow = c(2, 2))
 plot(model_step3)
 
+
+par(mfrow = c(1, 1))
+plot(MHC_SF_OVERALL ~ gender, data = data)
+plot(MHC_SF_OVERALL ~ age_group, data = data)
+plot(MHC_SF_OVERALL ~ marital, data = data)
+plot(MHC_SF_OVERALL ~ smoking, data = data)
+plot(MHC_SF_OVERALL ~ fivfruitveg, data = data)
+plot(MHC_SF_OVERALL ~ hour_sleep, data = data)
+plot(MHC_SF_OVERALL ~ week_soc_distancing, data = data)
+plot(MHC_SF_OVERALL ~ shielded, data = data)
+plot(MHC_SF_OVERALL ~ lockdown_bubble, data = data)
+plot(MHC_SF_OVERALL ~ athlete, data = data)
+plot(MHC_SF_OVERALL ~ jitter(AIMS_TOTAL), data = data)
+plot(MHC_SF_OVERALL ~ HADS_OVERALL, data = data)
+plot(MHC_SF_OVERALL ~ RES_TOTAL, data = data)
+plot(MHC_SF_OVERALL ~ LONE_TOTAL, data = data)
+plot(MHC_SF_OVERALL ~ lockdown_bubble, data = data)
+
+names(data)
+data_model_variable_only <- data[, c(1, 2, 6, 7, 8, 11, 12, 15, 16)]
+names(data_model_variable_only)
+pairs(data_model_variable_only)
+head(data_model_variable_only)
+summary(data_model_variable_only)
+data_model_variable_only[,c(4, 7, 8, 9)]
+
+
+cor(data_model_variable_only[, c(4, 7, 8, 9)], use="complete.obs")
 
 # too small
 model_step4 <- lm(MHC_SF_OVERALL ~ gender + age_group + 
