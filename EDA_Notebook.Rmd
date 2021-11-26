@@ -16,6 +16,7 @@ library(tidyverse)
 data <- read.csv("MH_survey_only_higher_index.csv",
     na.strings = "NA")
 names(data)
+names(data)[1] <- "gender"
 
 data <- data[, -c(17:22)]
 
