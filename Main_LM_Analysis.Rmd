@@ -149,6 +149,31 @@ final_model %>% summary()
 
 
 Gender & Athlete are both significant at 0.05. 
+HADS, LONE are also significant.  We will now do F-test on `age_group` and `week_soc_distancing`. 
+
+First with age_group 
+```{r}
+w.o.age_group = lm(formula = MHC_SF_OVERALL ~ gender + week_soc_distancing + 
+    athlete + HADS_OVERALL + LONE_TOTAL, data = data[complete.cases(data), 
+    ])
+anova(final_model, w.o.age_group)
+```
+
+Significant at 0.05
+
+Now with `week_soc_distancing`:
+
+
+```{r}
+w.o.week_soc_dist = lm(formula = MHC_SF_OVERALL ~ gender + age_group + 
+    athlete + HADS_OVERALL + LONE_TOTAL, data = data[complete.cases(data), 
+    ])
+anova(final_model, w.o.week_soc_dist )
+```
+
+
+Significant at 0.001!  Wow.  
+
 
 #Seokjun Comments on Next Steps
 comment (nov 27 1:30 am): 
@@ -158,18 +183,43 @@ First of all, thanks Sho!
 I think next thing to do is
 
 1. delete HAD or RES (because of Collinearity) <- we can do this right after 'step' function result
+
+Sho: Done, compared using AIC. Chose HAD. 
+
 2. draw diagnosis plot (residual, normal qq, leverage, ... using 'plot(lm_fit_object)', 
+    Sho: Done. 
     delete outlier/other annoying points.
-    please make a figure to show an outlier if it exists.
+    Sho: Did not do yet .
+    
+    Please make a figure to show an outlier if it exists.
+    
+    Sho: Done?
+    
     And, if there are variance problem (heteroskedasticity or ...), stop and rest (let's discuss together)
 3. re-fit lm (after deleting things in 1 and 2)
+  Sho: did not remove any outliers but removed HADS to create `final_model`. 
+    
 4. basic test: F test for model significance(first!) -> 
     t test for continuous variable, model comparison F-test (for each categorical variable group)
+    
+    Sho: Done. 
 5. visualize fitting result (if we can. if it is too high dimention, just make a table). See R^2/AIC/BIC,...
+    
+    Sho: not yet 
+
 6. residual analysis (same as 2)
+    
+    Sho: not yet?
+
 7. if we want:
     make prediction example?
     or... ???
+    
+    Sho: Not yet
+    
+8. Tested all interaction terms (secondary) <---- Added 
+
+   Sho: no terms were significant.  
 
 (I think) By Tuesday, we don't have to finish writing everything, but
 just 4,5,6(+7) steps table and figure is enough.
