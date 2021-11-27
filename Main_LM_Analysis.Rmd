@@ -82,5 +82,17 @@ The outlier point is unusual in terms of weeks social distancing and the maximum
 
 ```{r}
 model_step9$model[364, ]
+
+```
+
+
+# Testing All Interactions
+
+Here we run the F-Test on all secondary interactions.  It returned a small F statistic and high p-value. 
+
+```{r}
+model_interaction = lm(formula = MHC_SF_OVERALL ~ (gender + age_group + week_soc_distancing + 
+    athlete + HADS_OVERALL + RES_TOTAL + LONE_TOTAL)^2, data = data[complete.cases(data), ])  
+anova(model_step9, model_interaction)
 ```
 
