@@ -170,7 +170,7 @@ data %>%
     mutate(gender = ifelse(gender==1, "Male", "Female"), 
            athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
     mutate(Qurantined=shielded) %>% 
-    ggplot(aes(x=athlete, y=MHC_SF_OVERALL, color=Qurantined])) + 
+    ggplot(aes(x=athlete, y=MHC_SF_OVERALL, color=Qurantined)) + 
     geom_boxplot() + 
     facet_grid(~gender) + xlab("") + theme_bw() #doesn't error occur?
 ```
@@ -187,7 +187,7 @@ data %>%
 data %>% 
     mutate(gender = ifelse(gender==1, "Male", "Female"), 
            athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
-    ggplot(aes(x=HADS_OVERALL, y=MHC_SF_OVERALL, color=athlete)) + geom_point() + 
+    ggplot(aes(x=HADS_OVERALL, y=MHC_SF_OVERALL)) + geom_point(aes(color=athlete)) + 
     facet_grid(athlete~gender) + theme_bw() +
     geom_smooth(method="lm", se=FALSE)
 ```
@@ -204,6 +204,9 @@ cor_tbl = data %>% select(-MHC_SF_OVERALL) %>%
     mutate_each(as.numeric)  %>% na.omit() %>% cor()
 
 corrplot(cor_tbl, type="upper", order="hclust", method="color")
+```
+```{r}
 plot(RES_TOTAL~HADS_OVERALL, data = data)
 plot(AIMS_TOTAL ~ jitter(as.numeric(athlete),1), data = data)
 ```
+

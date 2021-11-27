@@ -55,8 +55,7 @@ step(model_full, direction = "backward")
 ```
 
 
-
-
+This is the model that results through the `step` function. 
 
 ```{r}
 model_step9 = lm(formula = MHC_SF_OVERALL ~ gender + age_group + week_soc_distancing + 
@@ -65,38 +64,93 @@ model_step9 = lm(formula = MHC_SF_OVERALL ~ gender + age_group + week_soc_distan
 model_step9  %>% summary()
 ```
 
-```{r fig.width=8, fig.height=5}
-par(mfrow = c(2, 2))
-plot(model_step9)
+
+# Removing variables with Collinearity Issues: RES & HADS 
+Determine which variable to remove (due to collinearity issue: RES or HADS):
+
+```{r}
+no_HADS = lm(formula = MHC_SF_OVERALL ~ gender + age_group + week_soc_distancing + 
+    athlete+ RES_TOTAL + LONE_TOTAL, data = data[complete.cases(data), 
+    ]) 
+
+no_RES = lm(formula = MHC_SF_OVERALL ~ gender + age_group + week_soc_distancing + 
+    athlete + HADS_OVERALL + LONE_TOTAL, data = data[complete.cases(data), 
+    ])
+
+paste0("AIC without HADS: ", c(no_HADS %>% extractAIC())[2] %>% round(2)) 
+paste0("AIC without RES: ", c(no_RES %>% extractAIC())[2] %>% round(2)) 
 ```
 
-Residual plots look almost perfect!  364 is an outlier but has very low leverage which is great.  
+AIC is significantly lower without RES. For the final model, we will remove RES. 
+
+
+# Final Model 
+
+```{r}
+final_model = lm(formula = MHC_SF_OVERALL ~ gender + age_group + week_soc_distancing + 
+    athlete + HADS_OVERALL + LONE_TOTAL, data = data[complete.cases(data), 
+    ])
+final_model %>% summary()
+```
+
+
+
+```{r fig.width=8, fig.height=5}
+par(mfrow = c(2, 2))
+plot(final_model)
+```
+
+Residual plots look almost perfect!  We will look at the outliers below. 
+
 
 # Outlier Analysis
 
 ```{r}
-model_step9$model %>% summary()
+plot(final_model, which=4)
 ```
 
 The outlier point is unusual in terms of weeks social distancing and the maximum LONE score (very lonely).  
+No Cook's distance is above 1 (or 0.5) so even the large points (296, 341, and 405) are not concerning. 
 
 ```{r}
-model_step9$model[364, ]
+final_model$model[c(296, 341, 405), ]
 
 ```
+
+Compare this to the overall data: 
+
+```{r}
+final_model$model %>% summary()
+```
+
+Comment: not obvious to me why these are outliers (but it is hard when there are so many variables).
+
 
 
 # Testing All Interactions
 
 Here we run the F-Test on all secondary interactions.  It returned a small F statistic and high p-value. 
+This is good news!  Less LaTeX work. 
 
 ```{r}
 model_interaction = lm(formula = MHC_SF_OVERALL ~ (gender + age_group + week_soc_distancing + 
-    athlete + HADS_OVERALL + RES_TOTAL + LONE_TOTAL)^2, data = data[complete.cases(data), ])  
-anova(model_step9, model_interaction)
+    athlete + HADS_OVERALL + + LONE_TOTAL)^2, data = data[complete.cases(data), ])  
+anova(final_model, model_interaction)
 ```
 
 
+# F-Test for Model Significance + T-test for continuous/two-category variables
+
+This can be done just via the `summary` function. 
+
+```{r}
+final_model %>% summary()
+```
+
+
+Gender & Athlete are both significant at 0.05. 
+
+#Seokjun Comments on Next Steps
 comment (nov 27 1:30 am): 
 
 First of all, thanks Sho!
@@ -124,3 +178,4 @@ Let's write together. Don't write it all alone! I'll help you
 
 And, please give me an idea to visualize the Lasso fit. 
 After making 2 plots, I don't know what to do.
+
