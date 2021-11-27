@@ -1,0 +1,86 @@
+---
+title: "Main Linear Model Analysis"
+author: "Sho"
+date: "11/26/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+
+# Loading in Data 
+
+Loading as done by Seokjun. 
+
+```{r}
+data <- read.csv("MH_survey_only_higher_index.csv",
+    na.strings = "NA")
+names(data)
+#only relevant for Seokjun's PC 
+names(data)[1] <- "gender"
+
+data <- data[, -c(17:22)]
+
+
+# Assigning factors 
+data$gender <- factor(data$gender)
+data$age_group <- factor(data$age_group)
+data$country_lockdown <- factor(data$country_lockdown)
+data$marital <- factor(data$marital)
+data$smoking <- factor(data$smoking)
+data$fivfruitveg <- factor(data$fivfruitveg)
+data$shielded <- factor(data$shielded)
+data$week_soc_distancing <- factor(data$week_soc_distancing)
+data$athlete <- factor(data$athlete)
+```
+
+
+
+# Step-wise Regression 
+
+Here we conduct the step-wise regression using step. 
+Note for Seokjun: `step` actually terminates at a different point if you take out missing data. 
+This is an issue. 
+
+The final model is pretty different than what we had before. 
+
+```{r}
+model_full <- lm(MHC_SF_OVERALL ~ ., data = data[complete.cases(data), ])
+summary(model_full)
+
+step(model_full, direction = "backward")
+```
+
+
+
+
+
+```{r}
+model_step9 = lm(formula = MHC_SF_OVERALL ~ gender + age_group + week_soc_distancing + 
+    athlete + HADS_OVERALL + RES_TOTAL + LONE_TOTAL, data = data[complete.cases(data), 
+    ])  
+model_step9  %>% summary()
+```
+
+```{r fig.width=8, fig.height=5}
+par(mfrow = c(2, 2))
+plot(model_step9)
+```
+
+Residual plots look almost perfect!  364 is an outlier but has very low leverage which is great.  
+
+# Outlier Analysis
+
+```{r}
+model_step9$model %>% summary()
+```
+
+The outlier point is unusual in terms of weeks social distancing and the maximum LONE score (very lonely).  
+
+```{r}
+model_step9$model[364, ]
+```
+

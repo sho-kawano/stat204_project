@@ -119,8 +119,8 @@ data %>% ggplot(aes(x=gender, y=MHC_SF_OVERALL, color=athlete)) + geom_boxplot()
 data %>% 
     mutate(gender = ifelse(gender==1, "Male", "Female"), 
            athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
-    mutate(`Endured Lockdown \n (shielded)`=shielded) %>% 
-    ggplot(aes(x=athlete, y=MHC_SF_OVERALL, color=`Endured Lockdown \n (shielded)`)) + 
+    mutate(Qurantined=shielded) %>% 
+    ggplot(aes(x=athlete, y=MHC_SF_OVERALL, color=Qurantined])) + 
     geom_boxplot() + 
     facet_grid(~gender) + xlab("") + theme_bw()
 ```
