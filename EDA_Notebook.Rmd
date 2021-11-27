@@ -56,20 +56,33 @@ plot(MHC_SF_OVERALL ~ lockdown_bubble, data = data)
 ```
 
 
+# Checking Balance Across Groups
+
 ```{r}
 data %>% select(gender, athlete) %>% table()
 ```
 
 
+There is imbalances in age_group & athlete/non-athlete.
+
 ```{r}
 data %>% select(age_group, athlete) %>% table()
 ```
 
+There is imbalances in age_group & athlete/non-athlete.
+
+```{r}
+data %>% select(age_group, gender) %>% table()
+```
+
+
+Most countries were in lockdown.
 
 ```{r}
 data %>% select(shielded, athlete) %>% table()
 ```
 
+There is an imbalance in marital status. 
 
 ```{r}
 data %>% select(marital, athlete) %>% table()
@@ -85,43 +98,52 @@ data %>% select(smoking, athlete) %>% table()
 ```
 
 
+# Other EDA Plots
+
+These are the research questions: 
+
+* Were athletes and non-athletes affected from COVID-19 shutdowns in the same way?
+* Did being in a COVID Lockdown affect mental well-being? 
+* Are there sex-based differences in the effects of COVID-19 on mental health?
+* Under controlled demographic information, what is the relationship between MH-SF index and other sub-indices in this survey?
+* Are there additional variable having strong relationship with MH-SF index?
+
+
 ```{r}
 data %>% ggplot(aes(x=gender, y=MHC_SF_OVERALL, color=athlete)) + geom_boxplot()
 ```
 
 
 
-# Step-wise Regression 
+```{r}
+data %>% 
+    mutate(gender = ifelse(gender==1, "Male", "Female"), 
+           athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
+    mutate(`Endured Lockdown \n (shielded)`=shielded) %>% 
+    ggplot(aes(x=athlete, y=MHC_SF_OVERALL, color=`Endured Lockdown \n (shielded)`)) + 
+    geom_boxplot() + 
+    facet_grid(~gender) + xlab("") + theme_bw()
+```
 
 ```{r}
-model_full <- lm(MHC_SF_OVERALL ~ ., data = data)
-summary(model_full)
-
-try(step(model_full, direction = "backward"))
-
-model_step <- lm(MHC_SF_OVERALL ~ gender + age_group + country_lockdown + marital +
-    smoking + fivfruitveg + shielded + week_soc_distancing +
-    athlete + AIMS_TOTAL + HADS_OVERALL + RES_TOTAL + LONE_TOTAL, data = data)
-summary(model_step)
-
-par(mfrow = c(2, 2))
-plot(model_step)
-
-
-
-model_step2 <- lm(MHC_SF_OVERALL ~ gender + age_group + marital +
-    smoking + fivfruitveg + shielded + week_soc_distancing +
-    athlete + AIMS_TOTAL + HADS_OVERALL + RES_TOTAL + LONE_TOTAL, data = data)
-summary(model_step2)
-
-
-model_step3 <- lm(MHC_SF_OVERALL ~ gender + age_group + 
-    fivfruitveg + shielded + hour_sleep +
-    athlete + AIMS_TOTAL + RES_TOTAL + LONE_TOTAL + athlete, data = data) #HADS_OVERALL
-summary(model_step3) #<<<<<<
-par(mfrow = c(2, 2))
-plot(model_step3)
+data %>% 
+    mutate(gender = ifelse(gender==1, "Male", "Female"), 
+           athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
+    ggplot(aes(x=hour_sleep, fill=athlete)) + geom_histogram() + facet_grid(athlete~gender) + theme_bw()
 ```
+
+
+```{r}
+data %>% 
+    mutate(gender = ifelse(gender==1, "Male", "Female"), 
+           athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
+    ggplot(aes(x=HADS_OVERALL, y=MHC_SF_OVERALL, color=athlete)) + geom_point() + 
+    facet_grid(athlete~gender) + theme_bw() +
+    geom_smooth(method="lm", se=FALSE)
+```
+
+
+
 # Collinearity 
 
 ```{r}
@@ -132,29 +154,4 @@ cor_tbl = data %>% select(-MHC_SF_OVERALL) %>%
     mutate_each(as.numeric)  %>% na.omit() %>% cor()
 
 corrplot(cor_tbl, type="upper", order="hclust", method="color")
-```
-
-```{r}
-library(corrplot)
-library(RColorBrewer)
-
-cor_tbl = data %>% select(-MHC_SF_OVERALL) %>%  
-    mutate_each(as.numeric)  %>% na.omit() %>% cor()
-
-corrplot(cor_tbl, type="upper", order="hclust", method="color",
-         col=brewer.pal(n=8, name="RdYlBu"))
-```
-
-
-# Final Model?
-
-```{r}
-model_step4 <- lm(MHC_SF_OVERALL ~ gender + age_group + fivfruitveg + shielded  +
-    athlete + AIMS_TOTAL + RES_TOTAL + LONE_TOTAL + athlete, data = data)
-summary(model_step4)
-```
-
-
-```{r}
-plot(model_step4)
 ```
