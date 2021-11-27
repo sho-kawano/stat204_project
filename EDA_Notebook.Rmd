@@ -36,23 +36,56 @@ data$athlete <- factor(data$athlete)
 # Pairs Plot
 
 ```{r}
+n_lab_to_boxplot <- function(factor_var) {
+    lev <- levels(factor_var)
+    for(i in seq_along(lev)) {
+        text(i, 1, paste("n=", sum(factor_var == lev[i]), sep = ""))
+    }
+}
+
+
 plot(MHC_SF_OVERALL ~ gender, data = data)
+n_lab_to_boxplot(data$gender)
+
 plot(MHC_SF_OVERALL ~ age_group, data = data)
+n_lab_to_boxplot(data$age_group)
+
 plot(MHC_SF_OVERALL ~ country_lockdown, data = data)
+n_lab_to_boxplot(data$country_lockdown)
+
 plot(MHC_SF_OVERALL ~ marital, data = data)
+n_lab_to_boxplot(data$marital)
+
 plot(MHC_SF_OVERALL ~ smoking, data = data)
+n_lab_to_boxplot(data$smoking)
+
 plot(MHC_SF_OVERALL ~ fivfruitveg, data = data)
+n_lab_to_boxplot(data$fivfruitveg)
+
 plot(MHC_SF_OVERALL ~ hour_sleep, data = data)
+
 plot(MHC_SF_OVERALL ~ week_soc_distancing, data = data)
+n_lab_to_boxplot(data$week_soc_distancing)
+
 plot(MHC_SF_OVERALL ~ shielded, data = data)
+n_lab_to_boxplot(data$shielded)
+
 plot(MHC_SF_OVERALL ~ lockdown_bubble, data = data)
+
 plot(MHC_SF_OVERALL ~ athlete, data = data)
-plot(MHC_SF_OVERALL ~ jitter(AIMS_TOTAL), data = data)
+n_lab_to_boxplot(data$athlete)
+
+plot(MHC_SF_OVERALL ~ AIMS_TOTAL, data = data)
 abline(line(data$AIMS_TOTAL, data$MHC_SF_OVERALL))
+
 plot(MHC_SF_OVERALL ~ HADS_OVERALL, data = data)
+abline(line(data$HADS_OVERALL, data$MHC_SF_OVERALL))
+
 plot(MHC_SF_OVERALL ~ RES_TOTAL, data = data)
+abline(line(data$RES_TOTAL, data$MHC_SF_OVERALL))
+
 plot(MHC_SF_OVERALL ~ LONE_TOTAL, data = data)
-plot(MHC_SF_OVERALL ~ lockdown_bubble, data = data)
+abline(line(data$LONE_TOTAL, data$MHC_SF_OVERALL))
 ```
 
 
@@ -60,6 +93,7 @@ plot(MHC_SF_OVERALL ~ lockdown_bubble, data = data)
 
 ```{r}
 data %>% select(gender, athlete) %>% table()
+plot(athlete ~ gender, data = data)
 ```
 
 
@@ -67,12 +101,14 @@ There is imbalances in age_group & athlete/non-athlete.
 
 ```{r}
 data %>% select(age_group, athlete) %>% table()
+plot(athlete ~ age_group, data = data)
 ```
 
 There is imbalances in age_group & athlete/non-athlete.
 
 ```{r}
 data %>% select(age_group, gender) %>% table()
+plot(gender ~ age_group, data = data)
 ```
 
 
@@ -80,21 +116,26 @@ Most countries were in lockdown.
 
 ```{r}
 data %>% select(shielded, athlete) %>% table()
+plot(athlete ~ shielded, data = data)
 ```
 
 There is an imbalance in marital status. 
 
 ```{r}
 data %>% select(marital, athlete) %>% table()
+plot(athlete ~ marital, data = data)
+
 ```
 
 
 ```{r}
 data %>% select(fivfruitveg, athlete) %>% table()
+plot(athlete ~ fivfruitveg, data = data)
 ```
 
 ```{r}
 data %>% select(smoking, athlete) %>% table()
+plot(athlete ~ smoking, data = data)
 ```
 
 
@@ -107,6 +148,15 @@ These are the research questions:
 * Are there sex-based differences in the effects of COVID-19 on mental health?
 * Under controlled demographic information, what is the relationship between MH-SF index and other sub-indices in this survey?
 * Are there additional variable having strong relationship with MH-SF index?
+
+idea:
+using ggplot, (we can use 3 variable for one plot!)
+- fix x axis as gender, y axis as MHC_SF_OVERALL, and change variable for color (for 1st question)
+- fix x axis as lockdown-related variable, y axis as MHC_SF_OVERALL, and change variable for color (for 2nd question)
+- fix x axis as athletes, y axis as MHC_SF_OVERALL, and change variable for color (for 3th question)
+
+and,
+draw histogram?? (for what?) (we can skip this)
 
 
 ```{r}
@@ -122,7 +172,7 @@ data %>%
     mutate(Qurantined=shielded) %>% 
     ggplot(aes(x=athlete, y=MHC_SF_OVERALL, color=Qurantined])) + 
     geom_boxplot() + 
-    facet_grid(~gender) + xlab("") + theme_bw()
+    facet_grid(~gender) + xlab("") + theme_bw() #doesn't error occur?
 ```
 
 ```{r}
@@ -154,4 +204,6 @@ cor_tbl = data %>% select(-MHC_SF_OVERALL) %>%
     mutate_each(as.numeric)  %>% na.omit() %>% cor()
 
 corrplot(cor_tbl, type="upper", order="hclust", method="color")
+plot(RES_TOTAL~HADS_OVERALL, data = data)
+plot(AIMS_TOTAL ~ jitter(as.numeric(athlete),1), data = data)
 ```

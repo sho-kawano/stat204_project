@@ -44,6 +44,9 @@ model_full_lasso_cv <- cv.gglasso(
     group = model_full_col_group,
     pred.loss = "L2",
     nfolds = 10)
+
+#first plot
+
 plot(model_full_lasso_cv)
 #choose lambda = 0.03
 log(0.03) # -3.506558
@@ -97,6 +100,7 @@ for (i in seq_len(length(try_log_lambdas))) {
     coeff_mat[, i] <- beta_at_each_lambda
 }
 
+#second plot
 plot(try_log_lambdas, rep(0, length(try_log_lambdas)), type = "n",
     xlim = c(min(try_log_lambdas), max(try_log_lambdas)), ylim = c(-0.4, 0.2),
     xlab = "log-lambda", ylab = "coefficients")

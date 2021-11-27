@@ -84,3 +84,31 @@ The outlier point is unusual in terms of weeks social distancing and the maximum
 model_step9$model[364, ]
 ```
 
+
+comment (nov 27 1:30 am): 
+
+First of all, thanks Sho!
+
+I think next thing to do is
+
+1. delete HAD or RES (because of Collinearity) <- we can do this right after 'step' function result
+2. draw diagnosis plot (residual, normal qq, leverage, ... using 'plot(lm_fit_object)', 
+    delete outlier/other annoying points.
+    please make a figure to show an outlier if it exists.
+    And, if there are variance problem (heteroskedasticity or ...), stop and rest (let's discuss together)
+3. re-fit lm (after deleting things in 1 and 2)
+4. basic test: F test for model significance(first!) -> 
+    t test for continuous variable, model comparison F-test (for each categorical variable group)
+5. visualize fitting result (if we can. if it is too high dimention, just make a table). See R^2/AIC/BIC,...
+6. residual analysis (same as 2)
+7. if we want:
+    make prediction example?
+    or... ???
+
+(I think) By Tuesday, we don't have to finish writing everything, but
+just 4,5,6(+7) steps table and figure is enough.
+
+Let's write together. Don't write it all alone! I'll help you
+
+And, please give me an idea to visualize the Lasso fit. 
+After making 2 plots, I don't know what to do.
