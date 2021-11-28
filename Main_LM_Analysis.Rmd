@@ -181,8 +181,9 @@ plot(final_model, which = 1) #delete 364? (index is 321, after deleting NAs)
 which.max(final_model$residuals); final_model$residuals[321]
 data[364, ]
 
-par(mfrow = c(4,4))
-for(i in 1:16){
+par(mfrow = c(4, 4))
+
+for(i in 1:16) {
     boxplot(data[, i], xlab = colnames(data)[i])
     points(1, data[364, i], pch = 19, col = "red", cex = 2)
 }
@@ -223,7 +224,9 @@ abline(h = 0)
 
 2. see leverage
 ```{r}
-plot(final_model, which = 4)
+par(mfrow = c(1, 1)); plot(final_model, which = 4)
+par(mfrow = c(2, 2)); plot(final_model)
+
 final_model$model[c(296, 341, 405), ] #not these
 final_model$model[c(266, 301, 354), ] #but these
 #or
