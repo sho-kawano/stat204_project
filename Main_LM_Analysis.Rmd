@@ -19,7 +19,7 @@ Loading as done by Seokjun.
 data <- read.csv("MH_survey_only_higher_index.csv",
     na.strings = "NA")
 names(data)
-#only relevant for Seokjun's PC
+#only relevant for Seokjun's PC <- thanks :D
 names(data)[1] <- "gender"
 
 data <- data[, -c(17:22)]
@@ -49,7 +49,7 @@ The final model is pretty different than what we had before.
 
 ```{r}
 data_without_na <- data[complete.cases(data), ]
-model_full <- lm(MHC_SF_OVERALL ~ ., data = data_without_na)
+model_full <- lm(MHC_SF_OVERALL ~ ., data = data[complete.cases(data), ])
 summary(model_full)
 
 step(model_full, direction = "backward")
@@ -60,7 +60,7 @@ This is the model that results through the `step` function.
 
 ```{r}
 model_step9 = lm(formula = MHC_SF_OVERALL ~ gender + age_group + week_soc_distancing + 
-    athlete + HADS_OVERALL + RES_TOTAL + LONE_TOTAL, data = data_without_na)
+    athlete + HADS_OVERALL + RES_TOTAL + LONE_TOTAL, data = data[complete.cases(data), ])
 model_step9  %>% summary()
 ```
 
@@ -70,10 +70,10 @@ Determine which variable to remove (due to collinearity issue: RES or HADS):
 
 ```{r}
 no_HADS = lm(formula = MHC_SF_OVERALL ~ gender + age_group + week_soc_distancing + 
-    athlete+ RES_TOTAL + LONE_TOTAL, data = data_without_na)
+    athlete+ RES_TOTAL + LONE_TOTAL, data = data[complete.cases(data), ])
 
 no_RES = lm(formula = MHC_SF_OVERALL ~ gender + age_group + week_soc_distancing + 
-    athlete + HADS_OVERALL + LONE_TOTAL, data = data_without_na)
+    athlete + HADS_OVERALL + LONE_TOTAL, data = data[complete.cases(data), ])
 
 paste0("AIC without HADS: ", c(no_HADS %>% extractAIC())[2] %>% round(2))
 paste0("AIC without RES: ", c(no_RES %>% extractAIC())[2] %>% round(2))
@@ -86,7 +86,7 @@ AIC is significantly lower without RES. For the final model, we will remove RES.
 
 ```{r}
 final_model = lm(formula = MHC_SF_OVERALL ~ gender + age_group + week_soc_distancing + 
-    athlete + HADS_OVERALL + LONE_TOTAL, data = data_without_na)
+    athlete + HADS_OVERALL + LONE_TOTAL, data = data[complete.cases(data), ])
 final_model %>% summary()
 ```
 
@@ -101,30 +101,6 @@ Residual plots look almost perfect!  We will look at the outliers below.
 Potential homoskedasticity? 
 
 
-# Outlier Analysis
-
-```{r}
-plot(final_model, which = 4)
-```
-
-The outlier point is unusual in terms of weeks social distancing and the maximum LONE score (very lonely).  
-No Cook's distance is above 1 (or 0.5) so even the large points (296, 341, and 405) are not concerning. 
-
-```{r}
-final_model$model[c(296, 341, 405), ]
-
-```
-
-Compare this to the overall data: 
-
-```{r}
-final_model$model %>% summary()
-```
-
-Comment: not obvious to me why these are outliers (but it is hard when there are so many variables).
-
-
-
 # Testing All Interactions
 
 Here we run the F-Test on all secondary interactions.  It returned a small F statistic and high p-value. 
@@ -132,7 +108,7 @@ This is good news!  Less LaTeX work.
 
 ```{r}
 model_interaction = lm(formula = MHC_SF_OVERALL ~ (gender + age_group + week_soc_distancing + 
-    athlete + HADS_OVERALL + + LONE_TOTAL)^2, data = data_without_na)
+    athlete + HADS_OVERALL + + LONE_TOTAL)^2, data = data[complete.cases(data), ])
 anova(final_model, model_interaction)
 ```
 
@@ -152,8 +128,8 @@ Anova(final_model) #type 2
 
 ```{r}
 w.o.gender = lm(formula = MHC_SF_OVERALL ~ age_group + week_soc_distancing + 
-    athlete + HADS_OVERALL + LONE_TOTAL, data = data_without_na)
-anova( w.o.gender, final_model)
+    athlete + HADS_OVERALL + LONE_TOTAL, data = data[complete.cases(data), ])
+anova(w.o.gender, final_model)
 ```
 
 
@@ -163,8 +139,8 @@ HADS, LONE are also significant.  We will now do F-test on `age_group` and `week
 First with age_group 
 ```{r}
 w.o.age_group = lm(formula = MHC_SF_OVERALL ~ gender + week_soc_distancing + 
-    athlete + HADS_OVERALL + LONE_TOTAL, data = data_without_na)
-anova(final_model, w.o.age_group)
+    athlete + HADS_OVERALL + LONE_TOTAL, data = data[complete.cases(data), ])
+anova(w.o.age_group, final_model)
 ```
 
 Significant at 0.05
@@ -174,7 +150,7 @@ Now with `week_soc_distancing`:
 
 ```{r}
 w.o.week_soc_dist = lm(formula = MHC_SF_OVERALL ~ gender + age_group + 
-    athlete + HADS_OVERALL + LONE_TOTAL, data = data_without_na)
+    athlete + HADS_OVERALL + LONE_TOTAL, data = data[complete.cases(data), ])
 anova(final_model, w.o.week_soc_dist)
 ```
 
@@ -182,20 +158,60 @@ anova(final_model, w.o.week_soc_dist)
 Significant at 0.001!    
 
 
-# Other Plots 
+# visualize fitting result
 
-other residual plots
+```{r fig.height=5, fig.width=8}
+library(car)
+# ?avPlots
+avPlots(final_model, terms=~HADS_OVERALL + LONE_TOTAL)
+```
+
+
+
+# diagnosis !
+# Outlier Analysis
+
+1. see residual
+```{r}
+par(mfrow = c(2, 2))
+plot(final_model)
+
+par(mfrow = c(1, 1))
+plot(final_model, which = 1) #delete 364? (index is 321, after deleting NAs)
+which.max(final_model$residuals); final_model$residuals[321]
+data[364, ]
+
+par(mfrow = c(4,4))
+for(i in 1:16){
+    boxplot(data[, i], xlab = colnames(data)[i])
+    points(1, data[364, i], pch = 19, col = "red", cex = 2)
+}
+```
+
+
 
 ```{r}
 par(mfrow = c(1, 1))
 # vs fitted
 plot(final_model$residuals ~ final_model$fitted.values)
 abline(h = 0)
+which.max(final_model$residuals)
+final_model$residuals[321] #364 before deleting NA, 321 after deleting NA
 
 #vs predictors
+n_lab_to_boxplot <- function(factor_var, y=1) {
+    lev <- levels(factor_var)
+    for(i in seq_along(lev)) {
+        text(i, y, paste("n=", sum(factor_var == lev[i]), sep = ""))
+    }
+}
+
+
 plot(final_model$residuals ~ data_without_na$gender)
 plot(final_model$residuals ~ data_without_na$age_group)
-plot(final_model$residuals ~ data_without_na$week_soc_distancing)  # <- hmm
+plot(final_model$residuals ~ data_without_na$week_soc_distancing)  # <- hmm. but boxes are similar
+n_lab_to_boxplot(data_without_na$week_soc_distancing, y = 25) #we can guess what makes the problem
+
 plot(final_model$residuals ~ data_without_na$athlete)
 plot(final_model$residuals ~ data_without_na$HADS_OVERALL)
 abline(h = 0)
@@ -205,27 +221,63 @@ abline(h = 0)
 ```
 
 
+2. see leverage
 ```{r}
-final_model
+plot(final_model, which = 4)
+final_model$model[c(296, 341, 405), ] #not these
+final_model$model[c(266, 301, 354), ] #but these
+#or
+data[c(296, 341, 405),]
+
+
+par(mfrow = c(4,4))
+for(i in 1:16){
+    boxplot(data[, i], xlab = colnames(data)[i])
+    points(1, data[296, i], pch = 19, col = "red", cex = 2)
+    points(1, data[341, i], pch = 19, col = "blue", cex = 2)
+    points(1, data[405, i], pch = 19, col = "green", cex = 2)
+}
 ```
 
+The outlier point is unusual in terms of weeks social distancing and the maximum LONE score (very lonely).  
+No Cook's distance is above 1 (or 0.5) so even the large points (296, 341, and 405) are not concerning. 
 
 
-```{r fig.height=5, fig.width=8}
-library(car)
-avPlots(final_model, terms=~HADS_OVERALL + LONE_TOTAL)
+
+Compare this to the overall data: 
+
+```{r}
+final_model$model %>% summary()
 ```
 
+Comment: not obvious to me why these are outliers (but it is hard when there are so many variables).
+Seokjun: see boxplots above (they seem ok)
 
 
 
 
-#Seokjun Comments on Next Steps
+comment (nov 27 3:20)
+issues:
+
+1. delete high-residual point? (364th)
+
+2. I think variance problem seems not big. (see above residual plots, verse predictors)
+
+3. visualize fitting result
+
+more partial-regression plot?
+
+
+(optional)
+7. if we want: make prediction example?
+    
+    Sho: Not yet
+    nov 27: later (if our paper seems too short)
+    
+
+
+
 comment (nov 27 1:30 am): 
-
-First of all, thanks Sho!
-
-I think next thing to do is
 
 1. delete HAD or RES (because of Collinearity) <- we can do this right after 'step' function result
 
@@ -264,6 +316,7 @@ I think next thing to do is
 7. if we want: make prediction example?
     
     Sho: Not yet
+    nov 27: later (if our paper seems too short)
     
 8. Tested all interaction terms (secondary) <---- Added 
 
