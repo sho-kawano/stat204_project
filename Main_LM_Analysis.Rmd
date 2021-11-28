@@ -101,6 +101,7 @@ plot(final_model)
 ```
 
 Residual plots look almost perfect!  We will look at the outliers below. 
+Potential homoskedasticity? 
 
 
 # Outlier Analysis
@@ -172,7 +173,31 @@ anova(final_model, w.o.week_soc_dist )
 ```
 
 
-Significant at 0.001!  Wow.  
+Significant at 0.001!    
+
+
+# Other Plots 
+
+
+
+```{r}
+final_model
+```
+
+
+```{r}
+final_model
+```
+
+
+
+```{r fig.height=5, fig.width=8}
+library(car)
+avPlots(final_model, terms=~HADS_OVERALL + LONE_TOTAL)
+```
+
+
+
 
 
 #Seokjun Comments on Next Steps
@@ -184,11 +209,13 @@ I think next thing to do is
 
 1. delete HAD or RES (because of Collinearity) <- we can do this right after 'step' function result
 
-Sho: Done, compared using AIC. Chose HAD. 
+    Sho: Done, compared using AIC. Chose HAD. 
 
-2. draw diagnosis plot (residual, normal qq, leverage, ... using 'plot(lm_fit_object)', 
+2. Draw diagnosis plot (residual, normal qq, leverage, ... using 'plot(lm_fit_object)', 
     Sho: Done. 
-    delete outlier/other annoying points.
+    
+    Delete outlier/other annoying points.
+    
     Sho: Did not do yet .
     
     Please make a figure to show an outlier if it exists.
@@ -196,24 +223,25 @@ Sho: Done, compared using AIC. Chose HAD.
     Sho: Done?
     
     And, if there are variance problem (heteroskedasticity or ...), stop and rest (let's discuss together)
+
 3. re-fit lm (after deleting things in 1 and 2)
-  Sho: did not remove any outliers but removed HADS to create `final_model`. 
+    
+    Sho: Did not remove any outliers but removed HADS to create `final_model`. 
     
 4. basic test: F test for model significance(first!) -> 
     t test for continuous variable, model comparison F-test (for each categorical variable group)
     
-    Sho: Done. 
+    Sho: Done.
+    
 5. visualize fitting result (if we can. if it is too high dimention, just make a table). See R^2/AIC/BIC,...
     
-    Sho: not yet 
+    Sho: Tried... 
 
 6. residual analysis (same as 2)
     
     Sho: not yet?
 
-7. if we want:
-    make prediction example?
-    or... ???
+7. if we want: make prediction example?
     
     Sho: Not yet
     
