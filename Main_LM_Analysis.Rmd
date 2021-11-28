@@ -19,13 +19,13 @@ Loading as done by Seokjun.
 data <- read.csv("MH_survey_only_higher_index.csv",
     na.strings = "NA")
 names(data)
-#only relevant for Seokjun's PC 
+#only relevant for Seokjun's PC
 names(data)[1] <- "gender"
 
 data <- data[, -c(17:22)]
 
 
-# Assigning factors 
+# Assigning factors
 data$gender <- factor(data$gender)
 data$age_group <- factor(data$age_group)
 data$country_lockdown <- factor(data$country_lockdown)
@@ -48,7 +48,8 @@ This is an issue.
 The final model is pretty different than what we had before. 
 
 ```{r}
-model_full <- lm(MHC_SF_OVERALL ~ ., data = data[complete.cases(data), ])
+data_without_na <- data[complete.cases(data), ]
+model_full <- lm(MHC_SF_OVERALL ~ ., data = data_without_na)
 summary(model_full)
 
 step(model_full, direction = "backward")
@@ -59,8 +60,7 @@ This is the model that results through the `step` function.
 
 ```{r}
 model_step9 = lm(formula = MHC_SF_OVERALL ~ gender + age_group + week_soc_distancing + 
-    athlete + HADS_OVERALL + RES_TOTAL + LONE_TOTAL, data = data[complete.cases(data), 
-    ])  
+    athlete + HADS_OVERALL + RES_TOTAL + LONE_TOTAL, data = data_without_na)
 model_step9  %>% summary()
 ```
 
@@ -70,15 +70,13 @@ Determine which variable to remove (due to collinearity issue: RES or HADS):
 
 ```{r}
 no_HADS = lm(formula = MHC_SF_OVERALL ~ gender + age_group + week_soc_distancing + 
-    athlete+ RES_TOTAL + LONE_TOTAL, data = data[complete.cases(data), 
-    ]) 
+    athlete+ RES_TOTAL + LONE_TOTAL, data = data_without_na)
 
 no_RES = lm(formula = MHC_SF_OVERALL ~ gender + age_group + week_soc_distancing + 
-    athlete + HADS_OVERALL + LONE_TOTAL, data = data[complete.cases(data), 
-    ])
+    athlete + HADS_OVERALL + LONE_TOTAL, data = data_without_na)
 
-paste0("AIC without HADS: ", c(no_HADS %>% extractAIC())[2] %>% round(2)) 
-paste0("AIC without RES: ", c(no_RES %>% extractAIC())[2] %>% round(2)) 
+paste0("AIC without HADS: ", c(no_HADS %>% extractAIC())[2] %>% round(2))
+paste0("AIC without RES: ", c(no_RES %>% extractAIC())[2] %>% round(2))
 ```
 
 AIC is significantly lower without RES. For the final model, we will remove RES. 
@@ -88,8 +86,7 @@ AIC is significantly lower without RES. For the final model, we will remove RES.
 
 ```{r}
 final_model = lm(formula = MHC_SF_OVERALL ~ gender + age_group + week_soc_distancing + 
-    athlete + HADS_OVERALL + LONE_TOTAL, data = data[complete.cases(data), 
-    ])
+    athlete + HADS_OVERALL + LONE_TOTAL, data = data_without_na)
 final_model %>% summary()
 ```
 
@@ -107,7 +104,7 @@ Potential homoskedasticity?
 # Outlier Analysis
 
 ```{r}
-plot(final_model, which=4)
+plot(final_model, which = 4)
 ```
 
 The outlier point is unusual in terms of weeks social distancing and the maximum LONE score (very lonely).  
@@ -135,7 +132,7 @@ This is good news!  Less LaTeX work.
 
 ```{r}
 model_interaction = lm(formula = MHC_SF_OVERALL ~ (gender + age_group + week_soc_distancing + 
-    athlete + HADS_OVERALL + + LONE_TOTAL)^2, data = data[complete.cases(data), ])  
+    athlete + HADS_OVERALL + + LONE_TOTAL)^2, data = data_without_na)
 anova(final_model, model_interaction)
 ```
 
@@ -146,6 +143,17 @@ This can be done just via the `summary` function.
 
 ```{r}
 final_model %>% summary()
+anova(final_model) #type 1
+# explanation: https://stats.stackexchange.com/questions/20452/how-to-interpret-type-i-type-ii-and-type-iii-anova-and-manova/20455#20455
+library(car)
+Anova(final_model) #type 2
+```
+
+
+```{r}
+w.o.gender = lm(formula = MHC_SF_OVERALL ~ age_group + week_soc_distancing + 
+    athlete + HADS_OVERALL + LONE_TOTAL, data = data_without_na)
+anova( w.o.gender, final_model)
 ```
 
 
@@ -155,8 +163,7 @@ HADS, LONE are also significant.  We will now do F-test on `age_group` and `week
 First with age_group 
 ```{r}
 w.o.age_group = lm(formula = MHC_SF_OVERALL ~ gender + week_soc_distancing + 
-    athlete + HADS_OVERALL + LONE_TOTAL, data = data[complete.cases(data), 
-    ])
+    athlete + HADS_OVERALL + LONE_TOTAL, data = data_without_na)
 anova(final_model, w.o.age_group)
 ```
 
@@ -167,9 +174,8 @@ Now with `week_soc_distancing`:
 
 ```{r}
 w.o.week_soc_dist = lm(formula = MHC_SF_OVERALL ~ gender + age_group + 
-    athlete + HADS_OVERALL + LONE_TOTAL, data = data[complete.cases(data), 
-    ])
-anova(final_model, w.o.week_soc_dist )
+    athlete + HADS_OVERALL + LONE_TOTAL, data = data_without_na)
+anova(final_model, w.o.week_soc_dist)
 ```
 
 
@@ -178,10 +184,24 @@ Significant at 0.001!
 
 # Other Plots 
 
-
+other residual plots
 
 ```{r}
-final_model
+par(mfrow = c(1, 1))
+# vs fitted
+plot(final_model$residuals ~ final_model$fitted.values)
+abline(h = 0)
+
+#vs predictors
+plot(final_model$residuals ~ data_without_na$gender)
+plot(final_model$residuals ~ data_without_na$age_group)
+plot(final_model$residuals ~ data_without_na$week_soc_distancing)  # <- hmm
+plot(final_model$residuals ~ data_without_na$athlete)
+plot(final_model$residuals ~ data_without_na$HADS_OVERALL)
+abline(h = 0)
+plot(final_model$residuals ~ data_without_na$LONE_TOTAL)
+abline(h = 0)
+
 ```
 
 
