@@ -10,7 +10,7 @@ output:
       slideNumber: T
 ---
 
-```{r include=FALSE}
+```{r, include=FALSE}
 library(tidyverse)
 # library(gridExtra)
 data <- read.csv("MH_survey_only_higher_index.csv",
@@ -32,11 +32,9 @@ data$shielded <- factor(data$shielded)
 data$week_soc_distancing <- factor(data$week_soc_distancing)
 data$athlete <- factor(data$athlete)
 ```
-```
 
 
 ## Background  
-
 
 
 Note: We should explain dataset change & new research questions. 
@@ -50,135 +48,341 @@ Later
 
 Describe data 
 
-
-Show preview (head)
-```{r, echo=FALSE}
-data %>% head() %>% as.data.frame()
-data$Sex <- factor(data$Sex)
-data$Athlete <- factor(data$Athlete)
-names(data)[3:7] <- c("AO", "AI", "CO", "CI", "AE")
-data$Factors <- factor(
-  paste(as.character(data$Sex), as.character(data$Athlete), sep = "_"))
-levels(data$Factors) <- c("F_N", "F_A", "M_N", "M_A")
+```{r}
+head(data)
 ```
 
+dealing NA
 
 # Main Research Questions 
 
-+ Do athletes and non-athletes deal with anger in the same way?
-+ Are there any gender differences?
-+ If there are differences by gender and athlete status, how do they differ? 
-+ Are there relationships among AO, AI, CO, CI?
-
-# EDA 
-<style>
-.container{
-    display: flex;
-}
-.col{
-    flex: 1;
-}
-</style>
-
-<div class="container">
-<div class="col">
+* Were athletes and non-athletes affected from COVID-19 shutdowns in the same way?
+* Did being in a COVID Lockdown affect mental well-being? 
+* Are there sex-based differences in the effects of COVID-19 on mental health?
+* Under controlled demographic information, what is the relationship between MH-SF index and other sub-indices in this survey?
+* Are there additional variable having strong relationship with MH-SF index?
 
 
 
-```{r, echo=FALSE, fig.width=4, warning=FALSE}
-library(ggpubr)
-#par(mfrow = c(1, 3))
-levels(data$Sex) <- c("female", "male")
-levels(data$Athlete) <- c("Non-athlete", "Athlete")
-# boxplot(AE ~ Sex, data = data)
-# boxplot(AE ~ Athlete, data = data)
-# boxplot(AE ~ Factors, data = data)
-
-boxplot1 <- ggplot(data, aes(y = AE, fill = Sex)) + geom_boxplot() 
-boxplot2 <- ggplot(data, aes(y = AE, fill = Athlete)) + geom_boxplot() 
-ggarrange(boxplot1, boxplot2, #bp + rremove("x.text"), 
-          # labels = c("A", "B", "C"),
-          ncol = 1, nrow = 2)
-```
-</div>
-<div class="col">
-
-```{r fig.width=4, echo=FALSE}
-
-data %>% ggplot(aes(y = AE, fill = Factors)) + geom_boxplot()
-```
-
-</div>
-</div>
 
 # EDA
-```{r, echo=FALSE}
+
+MHC_SF VS QUARANTINED (WITH GENDER)
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data %>% 
+    mutate(gender = ifelse(gender==1, "Male", "Female"), 
+           athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
+    mutate(Qurantined=shielded) %>% 
+    ggplot(aes(x=athlete, y=MHC_SF_OVERALL, color=Qurantined)) + 
+    geom_boxplot() + 
+    facet_grid(~gender) + xlab("") + theme_bw() #doesn't error occur?
+```
+
+#
+
+MHC_SF VS HADS (GENDER - ATHLETE)
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data %>% 
+    mutate(gender = ifelse(gender==1, "Male", "Female"), 
+           athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
+    ggplot(aes(x=HADS_OVERALL, y=MHC_SF_OVERALL)) + geom_point(aes(color=athlete)) + 
+    facet_grid(athlete~gender) + theme_bw() +
+    geom_smooth(se=FALSE)
+```
+
+#
+
+MHC_SF VS SOC_DIST (GENDER - ATHLETE)
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data %>% 
+    mutate(gender = ifelse(gender==1, "Male", "Female"), 
+           athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
+    ggplot(aes(x=week_soc_distancing, y=MHC_SF_OVERALL)) + geom_boxplot(aes(color=athlete)) + 
+    facet_grid(athlete~gender) + theme_bw() +
+    geom_smooth(se=FALSE)
+```
+
+#
+
+MHC_SF VS AGE_GROUP (GENDER - ATHLETE)
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data %>% 
+    mutate(gender = ifelse(gender==1, "Male", "Female"), 
+           athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
+    ggplot(aes(x=age_group, y=MHC_SF_OVERALL)) + geom_boxplot(aes(color=athlete)) + 
+    facet_grid(athlete~gender) + theme_bw() +
+    geom_smooth(se=FALSE)
+```
+
+#
+
+MHC_SF VS LONE_TOTAL (GENDER - ATHLETE)
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data %>% 
+    mutate(gender = ifelse(gender==1, "Male", "Female"), 
+           athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
+    ggplot(aes(x=LONE_TOTAL, y=MHC_SF_OVERALL)) + geom_point(aes(color=athlete)) + 
+    facet_grid(athlete~gender) + theme_bw() +
+    geom_smooth(se=FALSE)
+```
+
+
+# Collinearity 
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(corrplot)
+library(RColorBrewer)
+
+cor_tbl = data %>% select(-MHC_SF_OVERALL) %>%  
+    mutate_each(as.numeric)  %>% na.omit() %>% cor()
+
+corrplot(cor_tbl, type="upper", order="hclust", method="color")
+```
+
+#
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data %>% ggplot(aes(x=RES_TOTAL, y=HADS_OVERALL)) + geom_point() + geom_smooth(se=FALSE)+ theme_bw()
+```
+
+#
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data %>% ggplot(aes(x=athlete, y=AIMS_TOTAL)) + geom_point(position="jitter") + 
+  geom_boxplot(alpha=0.01, color="blue")+ theme_bw()
+```
+
+
+# model selection
+
+
+stepwise model-selection
+Removing variables with Collinearity Issues: RES & HADS 
+(only verbally: interaction problem)
+
+
+# Model explanation (lm)
+
+talk about the final linear model
+
+
+# fitting
+
+add summary table
+anova table
+(verbally: F-test, t-test)
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(car)
+```
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+final_model = lm(formula = MHC_SF_OVERALL ~ gender + age_group + week_soc_distancing + 
+    athlete + HADS_OVERALL + LONE_TOTAL, data = data[complete.cases(data), ])
+final_model %>% summary()
+```
+
+#
+
+```{r}
+final_model %>% Anova()
+```
+
+
+# fitting diagnosis
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 par(mfrow = c(2, 2))
-boxplot(AO ~ Factors, data = data)
-boxplot(AI ~ Factors, data = data)
-boxplot(CO ~ Factors, data = data)
-boxplot(CI ~ Factors, data = data)
+plot(final_model)
 ```
 
+#
 
-# Two-Way ANOVA 
+(for the high residual point)
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+par(mfrow = c(3, 2))
+for(i in (names(final_model$model)[-1])) {
+    now_data <- as.numeric(data[, i])
+    if (i == "week_soc_distancing") {
+      now_data <- now_data - 1
+    }
+    boxplot(now_data, xlab = i, horizontal = TRUE)
+    points(now_data[364], 1, pch = 19, col = "red", cex = 2)
+}
+```
 
-\[AE = \mu + \alpha_i + \beta_j + \gamma_{i,j} +\epsilon \]
-where \(\epsilon \sim Normal(0, \sigma^2)\) for fixed $\sigma^2$
+#
 
-- $\alpha_i$: effect of 'gender' (i = 0(female), 1(male))
-- $\beta_i$: effect of 'being an athlete' (i = 0(non-athlete), 1(athlete))
-- $\gamma_{i,j}$: interaction between gender and being an athlete
+(heteroskedasticity)
 
-Then two main questions reduce to
-
-- $\alpha_0 = \alpha_1$? or $\alpha_0 \neq \alpha_1$?
-- $\beta_0 = \beta_1$? or $\beta_0 \neq \beta_1$?
-
-If so, how do they differ?
-
-# Explore Relationships
-Can we explain 'AO' by other variables?
-
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data_without_na <- data[complete.cases(data), ]
 par(mfrow = c(1, 1))
-pairs(data[, 3:6])
+n_lab_to_boxplot <- function(factor_var, y=1) {
+    lev <- levels(factor_var)
+    for(i in seq_along(lev)) {
+        text(i, y, paste("n=", sum(factor_var == lev[i]), sep = ""))
+    }
+}
 ```
+
+#
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+plot(final_model$residuals ~ data_without_na$week_soc_distancing)  # <- hmm. but boxes are similar
+n_lab_to_boxplot(data_without_na$week_soc_distancing, y = 25) #we can guess what makes the problem
+
+```
+
+#
+
+(leverage)
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+par(mfrow = c(1, 1)); plot(final_model, which = 4)
+
+# final_model$model[c(266, 301, 354), ] #but these
+# #or
+# data[c(296, 341, 405),]
+```
+
+
+
+# Grouped Lasso model
+
+model explanation
+
+# choosing lambda
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# group lasso from full model
+library(gglasso)
+# ?gglasso
+
+model_full <- lm(MHC_SF_OVERALL ~ ., data = data)
+design_matrix_full <- model.matrix(model_full)[, -1]
+conti_var_idx <- c(24, 33, 35, 36, 37, 38)
+design_matrix_full <- scale(model.matrix(model_full)[, -1])
+# for(i in conti_var_idx) {
+#     design_matrix_full[, i] <- scale(design_matrix_full[, i])
+# }
+response_full <- scale(model_full$model$MHC_SF_OVERALL)
+
+model_full_col_group <- c(1, 2, 2, 2, 2, 2, 2,
+    3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 7, 8,
+    9, 9, 9, 9, 9, 9, 9, 10, 11, 12, 13, 14, 15)
+# data.frame(colnames(design_matrix_full), model_full_col_group) #for check
+```
+
+```{r}
+# fit with cv
+model_full_lasso_cv <- cv.gglasso(
+    design_matrix_full, response_full,
+    group = model_full_col_group,
+    pred.loss = "L2",
+    nfolds = 10)
+```
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+plot(model_full_lasso_cv)
+abline(v = log(0.03), col = "blue")
+text(log(0.03), 1, "lambda: 0.03", pos = 4, col = "blue")
+```
+
+
+
+# Lasso fit result
+
+
+```{r}
+model_full_lasso_fit <- gglasso(
+    design_matrix_full, response_full,
+    lambda = 0.03,
+    group = model_full_col_group, loss = "ls")
+
+model_full_lasso_fit$npasses
+```
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+
+coeff_lasso <- round(coef(model_full_lasso_fit), 3)
+coeff_lasso[1:20, ] %>% as.data.frame()
+
+```
+
+```{r}
+coeff_lasso[21:39, ] %>% as.data.frame()
+```
+
+As a result (?):
+
+MHC_SF_OVERALL ~ gender + age_group +
+    fivfruitveg + week_soc_distancing +
+    athlete + HADS_OVERALL + RES_TOTAL + LONE_TOTAL
+
+#
+coeff plot
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+
+try_log_lambdas <- seq(-2.4, -4, by = -0.01)
+coeff_mat <- matrix(0, 38, length(try_log_lambdas))
+rownames(coeff_mat) <- colnames(design_matrix_full)
+colnames(coeff_mat) <- try_log_lambdas
+for (i in seq_len(length(try_log_lambdas))) {
+    log_lambda <- try_log_lambdas[i]
+    beta_at_each_lambda <- gglasso(
+        design_matrix_full, response_full,
+        lambda = exp(log_lambda),
+        group = model_full_col_group, loss = "ls")$beta
+    coeff_mat[, i] <- beta_at_each_lambda
+}
+
+
+#second plot
+plot(try_log_lambdas, rep(0, length(try_log_lambdas)), type = "n",
+    xlim = c(min(try_log_lambdas), max(try_log_lambdas)), ylim = c(-0.4, 0.2),
+    xlab = "log-lambda", ylab = "coefficients")
+for (i in 1:38) {
+    lines(try_log_lambdas, coeff_mat[i, ], col = i + 1)
+    coeff_at_eval_point <- coeff_mat[i, which(try_log_lambdas == -3.5)]
+    if (coeff_at_eval_point > 0.02 | coeff_at_eval_point < -0.02) {
+        text(-4, coeff_mat[i, length(try_log_lambdas)],
+            rownames(coeff_mat)[i], pos = 4)
+        # print(rownames(coeff_mat)[i])
+    }
+}
+abline(h = 0)
+abline(v = log(0.03), lty = 2)
+text(-3.5, -0.2, "lambda=0.03")
+
+```
+
+# compared
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+lasso_coeff <- coef(model_full_lasso_fit)[coef(model_full_lasso_fit) != 0]
+
+after_lasso_lm_fit_non_scaled <- lm(MHC_SF_OVERALL ~ gender + age_group +
+    fivfruitveg + week_soc_distancing +
+    athlete + HADS_OVERALL + RES_TOTAL + LONE_TOTAL, data = data)
+scaled <- scale(model.matrix(after_lasso_lm_fit_non_scaled)[, -1])
+response_al <- scale(after_lasso_lm_fit_non_scaled$model$MHC_SF_OVERALL)
+after_lasso_lm_fit <- lm(response_al ~ scaled)
+# summary(after_lasso_lm_fit)
+
+# coef(after_lasso_lm_fit)[coef(after_lasso_lm_fit) != 0]
+round(data.frame(lm_coeff = coef(after_lasso_lm_fit),
+    lasso_coeff = lasso_coeff), 3)
+
+
+# par(mfrow = c(2, 2))
+# plot(after_lasso_lm_fit)
+
+```
+
 
 # Discussion 
 
 Any questions? Comments? Suggestions? 
 
-
-# Additional plots 1
-
-```{r, echo=FALSE}
-density_est_AE <- ggplot(data, aes(x = AE)) + 
-    geom_density(fill="black") + ylim(0, 0.04)
-density_est_AE_eachfactor <- ggplot(data, aes(x = AE, fill = Factors)) + 
-    geom_density(alpha=0.5, position="identity") + ylim(0, 0.04)
-
-  
-ggarrange(density_est_AE, density_est_AE_eachfactor,
-          #bp + rremove("x.text"),
-          # labels = c("A", "B", "C"),
-          ncol = 1, nrow = 2)
-```
-
-# Additional plots 2
-
-```{r, echo=FALSE}
-hist_AE <- ggplot(data, aes(x = AE)) + geom_histogram(bins = 20)
-hist_AE_col <- ggplot(data, aes(x = AE, fill = Factors)) + geom_histogram(bins = 20)
-ggarrange(hist_AE, hist_AE_col,
-          #bp + rremove("x.text"),
-          # labels = c("A", "B", "C"),
-          ncol = 1, nrow = 2)
-```
-
-# Additional plots 3
-
-```{r, echo=FALSE}
-qq_AE <- qqnorm(data$AE, main = "Normal Q-Q Plot: AE")
-qqline(data$AE)
-```

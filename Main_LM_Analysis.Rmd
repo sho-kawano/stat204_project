@@ -181,10 +181,10 @@ plot(final_model, which = 1) #delete 364? (index is 321, after deleting NAs)
 which.max(final_model$residuals); final_model$residuals[321]
 data[364, ]
 
-par(mfrow = c(4, 4))
-
-for(i in 1:16) {
-    boxplot(data[, i], xlab = colnames(data)[i])
+par(mfrow = c(3, 2))
+for(i in (names(final_model$model)[-1])) {
+    print(i)
+    boxplot(data[, i], xlab = i)
     points(1, data[364, i], pch = 19, col = "red", cex = 2)
 }
 ```
