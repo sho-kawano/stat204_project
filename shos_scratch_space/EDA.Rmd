@@ -1,0 +1,119 @@
+---
+title: "EDA/Scratchwork"
+author: "Sho"
+date: "11/20/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+
+Loading in data
+
+```{r warning=FALSE, message=FALSE}
+setwd("~/coding/stat204_project")
+df = read_csv("angry_moods.csv") %>% 
+          mutate(Sex = ifelse(Sex==2, 0, 1)) %>% 
+          mutate(Athlete = ifelse(Athlete==2, 0, 1))
+#male 2/0:female
+#athletes, 2/0: non-athletes
+
+df$Sex = factor(df$Sex, labels=c("female", "male"))
+df$Athlete = factor(df$Athlete, labels=c("athlete","non-athlete"))
+df = df %>% select(Sex, Athlete, 
+                   AO = `Anger-Out`, AI = `Anger-In`, CO=`Control-Out`, 
+                   CI=`Control-In`, AE=Anger_Expression)
+df %>% head()
+```
+
+
+```{r}
+df %>% dim()
+```
+
+
+```{r}
+df %>% select(Sex, Athlete) %>% table()
+```
+
+
+```{r}
+df %>% ggplot(aes(x=Sex, y=AE, color=Athlete)) + geom_boxplot()
+```
+
+The variances look equal. 
+
+
+```{r}
+df %>% ggplot(aes(sample=AE, color=Athlete)) + stat_qq() + stat_qq_line()+ 
+  facet_wrap(~Sex)
+```
+
+
+```{r}
+df %>% ggplot(aes(x=AE, fill=Athlete)) + geom_histogram(bins=7)+ 
+  facet_grid(Athlete~Sex)
+```
+
+```{r}
+with(data = df, expr = {
+  interaction.plot(Athlete, Sex, response = AE, lwd = 2, col = c("orange", "purple","blue"))
+})
+```
+
+
+
+## Fitting ANOVA Model with weighted means
+
+```{r}
+m.interactions = aov(Anger_Expression ~ Sex * Athlete, data = df)
+m.interactions %>% summary()
+```
+
+We see here that both Sex and the interaction terms are NOT statistcially significant. 
+
+```{r}
+m.full = aov(Anger_Expression ~ Sex +Athlete, data = df)
+m.full %>% summary()
+```
+
+Even removing the interactions, `Sex` is not a significant variable.  
+
+```{r}
+m.athlete = aov(Anger_Expression ~ Athlete, data = df) 
+m.athlete %>% summary()
+```
+
+
+Comparing the model with only `Athlete` with the model with interactions. 
+
+```{r}
+anova(m.athlete, m.interactions)
+```
+
+So it is very likely that both the effect for `Sex` and the interactions is =0. 
+
+Comparing the model without `Sex` with the full model.  
+
+```{r}
+m.athlete = aov(Anger_Expression ~ Athlete, data = df)
+  
+anova(m.athlete, m.full)
+```
+
+
+## Residuals 
+
+The residuals on this anova model looks very normal. 
+
+```{r}
+
+m.athlete %>% plot(which = 2)
+```
+
+
+
+
