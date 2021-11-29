@@ -34,35 +34,47 @@ data$athlete <- factor(data$athlete)
 ```
 
 
-## Background  
+
+# Changed Dataset
+
+* Similar but different research questions
+* Examine how athletes & non-athletes were affected by COVID-19.
+* Online Survey Data Collected as the UK + Ireland emerged from COVID-19 Lockdowns 
+  + Taken 14-16 weeks after lockdowns. June/July 2020. 
+  + n=753 (# of complete cases: 457)
 
 
-Note: We should explain dataset change & new research questions. 
+# Data Description: Factors
+
+* Gender (Binary). <small>Male/Female</small>
+* Shielded (Quarantined). <small>Yes/No </small>
+* Athlete/Non-Athlete
+* Marital Status  <small>5-level </small>
+* Age group <small>7-level & ordered. </small>
+* Country during lockdown. <small>7-level.</small>
+* Smoking status. <small>7-level.</small>
+* Week Social Distancing. <small>7-level & ordered.</small>
+* \# in Lockdown bubble. <small>7-level & ordered.</small>
 
 
-## Explain psychological indexes 
 
-Later 
+# Data Description: Numeric
 
-# Data Description
+* Hours Sleep.  <small>Range: 1.5-10.5 hours</small>
+* Athlete Identification Index (AIMS). <small>Range: 1-7.</small>
+* Hospital Anxiety & Depression Scale (HADS). <small>Range: 0-36.</small>
+* Brief Resilience Scale  (RES). <small>Range: 6-30</small>
+* Loneliness Scale (LONE) <small>Range: 0-6</small>
+* *Response:* MHC-SF. Represents overall well-being. <small>Range: 2-70</small>
 
-Describe data 
 
-```{r}
-head(data)
-```
-
-dealing NA
 
 # Main Research Questions 
 
-* Were athletes and non-athletes affected from COVID-19 shutdowns in the same way?
-* Did being in a COVID Lockdown affect mental well-being? 
+* Were athletes and non-athletes affected from COVID-19 lockdown/social distancing in the same way?
 * Are there sex-based differences in the effects of COVID-19 on mental health?
 * Under controlled demographic information, what is the relationship between MH-SF index and other sub-indices in this survey?
-* Are there additional variable having strong relationship with MH-SF index?
-
-
+* Are there additional variables having strong relationship with MH-SF index?
 
 
 # EDA
