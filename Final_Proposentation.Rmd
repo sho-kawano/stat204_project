@@ -101,6 +101,7 @@ data %>%
     geom_boxplot(show.legend = FALSE) + 
     facet_grid(athlete~gender) + xlab("Quarantined") + theme_bw() #doesn't error occur?
 ```
+<small>Quarantined</small>
 </div>
 <div class="col">
 
@@ -109,10 +110,12 @@ data %>%
 data %>% 
     mutate(gender = ifelse(gender==1, "Male", "Female"), 
            athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
+   mutate(Week_Soc_Dist = ifelse())
     ggplot(aes(x=week_soc_distancing, y=MHC_SF_OVERALL)) + geom_boxplot(aes(color=athlete), show.legend = FALSE) + 
-    facet_grid(athlete~gender) + theme_bw() +
+    facet_grid(athlete~gender) + theme_bw() + 
     geom_smooth(se=FALSE)
 ```
+<small>Weeks Social Distancing</small>
 </div>
 </div>
 # EDA
