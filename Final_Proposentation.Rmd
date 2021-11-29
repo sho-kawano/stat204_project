@@ -99,7 +99,7 @@ data %>%
     mutate(shielded=ifelse(shielded==1, "Yes", "No")) %>% 
     ggplot(aes(x=shielded, y=MHC_SF_OVERALL, color=athlete)) + 
     geom_boxplot(show.legend = FALSE) + 
-    facet_grid(athlete~gender) + xlab("Quarantined") + theme_bw() #doesn't error occur?
+    facet_grid(athlete~gender) + xlab("") + theme_bw() #doesn't error occur?
 ```
 <small>Quarantined</small>
 </div>
@@ -110,8 +110,15 @@ data %>%
 data %>% 
     mutate(gender = ifelse(gender==1, "Male", "Female"), 
            athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
-  # mutate(Week_Soc_Dist = ifelse())
-    ggplot(aes(x=week_soc_distancing, y=MHC_SF_OVERALL)) + geom_boxplot(aes(color=athlete), show.legend = FALSE) + 
+   mutate(Week_Soc_Dist = ifelse(week_soc_distancing==0, "0", 
+                                 ifelse(week_soc_distancing==1, "1-3", 
+                                  ifelse(week_soc_distancing==2, "4-6", 
+                                  ifelse(week_soc_distancing==3, "7-9", 
+                                  ifelse(week_soc_distancing==4, "10-12", 
+                                  ifelse(week_soc_distancing==5, "13-15", 
+                                  ifelse(week_soc_distancing==6, "16-18", "19-21")))))))) %>% 
+  mutate(Week_Soc_Dist = factor(Week_Soc_Dist, levels=c("0", "1-3", "4-6", "7-9", "10-12", "13-15", "16-18", "19-21"))) %>% 
+    ggplot(aes(x=Week_Soc_Dist, y=MHC_SF_OVERALL)) + geom_boxplot(aes(color=athlete), show.legend = FALSE) + xlab("") +
     facet_grid(athlete~gender) + theme_bw() + 
     geom_smooth(se=FALSE)
 ```
@@ -132,7 +139,6 @@ data %>%
 <div class="container">
 <div class="col">
 
-MHC_SF ~ HADS 
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 data %>% 
@@ -148,7 +154,6 @@ data %>%
 </div>
 <div class="col">
 
-MHC_SF ~ LONE 
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 data %>% 
@@ -166,6 +171,17 @@ Both are negatively correlated with MHC_SF.
 
 
 # Collinearity 
+<style>
+.container{
+    display: flex;
+}
+.col{
+    flex: 2;
+}
+</style>
+
+<div class="container">
+<div class="col">
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 library(corrplot)
@@ -176,20 +192,20 @@ cor_tbl = data %>% select(-MHC_SF_OVERALL) %>%
 
 corrplot(cor_tbl, type="upper", order="hclust", method="color")
 ```
-
-#
-
-```{r, echo=FALSE, warning=FALSE, message=FALSE}
-data %>% ggplot(aes(x=RES_TOTAL, y=HADS_OVERALL)) + geom_point() + geom_smooth(se=FALSE)+ theme_bw()
-```
-
-#
+</div>
+<div class="col">
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
-data %>% ggplot(aes(x=athlete, y=AIMS_TOTAL)) + geom_point(position="jitter") + 
-  geom_boxplot(alpha=0.01, color="blue")+ theme_bw()
+library(ggpubr)
+plt1 = data %>% ggplot(aes(x=RES_TOTAL, y=HADS_OVERALL)) + geom_point(alpha=0.5) + geom_smooth(se=FALSE)+ theme_bw() + xlab("RES") + ylab("HADS")
+plt2 = data %>% ggplot(aes(x=athlete, y=AIMS_TOTAL)) + geom_point(position="jitter", alpha=0.5) + 
+  geom_boxplot(alpha=0.1, fill="blue", color="blue")+ theme_bw() +xlab("athlete") + ylab("AIMS")
+
+ggarrange(plt1, plt2, ncol = 1, nrow = 2)
 ```
 
+</div>
+</div>
 
 # model selection
 
