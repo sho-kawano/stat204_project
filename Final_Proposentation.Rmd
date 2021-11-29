@@ -517,8 +517,16 @@ Group Lasso gives \newline
 `MHC_SF ~ gender + age_group + fivfruitveg + ` \newline
 `wk_soc_distancing+ athlete + HADS + RES + LONE`
 
-The only difference is the Five Fruits & Veggies Variable. 
 
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+after_lasso_lm_fit_non_scaled <- lm(MHC_SF_OVERALL ~ gender + age_group +
+    fivfruitveg + week_soc_distancing +
+    athlete + HADS_OVERALL + RES_TOTAL + LONE_TOTAL, data = data)
+scaled <- scale(model.matrix(after_lasso_lm_fit_non_scaled)[, -1])
+response_al <- scale(after_lasso_lm_fit_non_scaled$model$MHC_SF_OVERALL)
+after_lasso_lm_fit <- lm(response_al ~ scaled)
+summary(after_lasso_lm_fit)
+```
 
 # Discussion 
 
