@@ -21,7 +21,7 @@ names(data)[1] <- "gender"
 data <- data[, -c(17:22)]
 
 
-# Assigning factors 
+# Assigning factors
 data$gender <- factor(data$gender)
 data$age_group <- factor(data$age_group)
 data$country_lockdown <- factor(data$country_lockdown)
