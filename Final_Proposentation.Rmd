@@ -514,7 +514,7 @@ ANCOVA gives \newline
 `+ athlete + HADS + LONE`
 
 Group Lasso gives \newline
-`MHC_SF ~ gender + age_group + fivfruitveg + ` \newline
+`MHC_SF ~ gender + age_group + ` <span style="color: blue;">`fivfruitveg`</span> `+`\newline
 `wk_soc_distancing+ athlete + HADS + RES + LONE`
 
 
