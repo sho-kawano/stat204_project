@@ -160,14 +160,30 @@ data %>% ggplot(aes(x=athlete, y=AIMS_TOTAL)) + geom_point(position="jitter") +
 
 
 stepwise model-selection
-Removing variables with Collinearity Issues: RES & HADS 
+Removing variables with Collinearity Issues: RES & HADS (using AIC criterion)
 (only verbally: interaction problem)
+
+
 
 
 # Model explanation (lm)
 
-talk about the final linear model
+\begin{align*}
+y_{i} = &\mu 
++ \beta_{1}I_{gender=2}(x_i)
++ \sum_{j=2}^7\beta_{2j}I_{\text{age grp}=j}(x_{2i}) \\
+&+ \sum_{j=1}^7 \beta_{9_j}I_{\text{wk soc dist}=j}(x_{9i})
++ \beta_10 I_{\text{athlete}=2}(x_{10i}) \\
+&+ \beta_{13} x_{13i}
++ \beta_{15} x_{15i}
++ \epsilon_i \\
+\end{align*}
 
+
+where $I_A$s are indicator variables, ($I_A(x)= 1$ if $x \in A$, or $0$ otherwise), and
+$x_{13i}, x_{15i}$ are HADS and LONE of i-th point, respectively (the continuous variables).
+
+We will do the standard residual analysis to check assumptions. 
 
 # fitting
 
@@ -201,6 +217,7 @@ plot(final_model)
 #
 
 (for the high residual point)
+
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 par(mfrow = c(3, 2))
 for(i in (names(final_model$model)[-1])) {
@@ -252,7 +269,61 @@ par(mfrow = c(1, 1)); plot(final_model, which = 4)
 
 # Grouped Lasso model
 
-model explanation
+
+ <font size="4">
+
+\begin{align*}
+y_{i} = &\mu 
++ \beta_{1}I_{gender=2}(x_i)
++ \sum_{j=2}^7\beta_{2j}I_{\text{age grp}=j}(x_{2i})
++ \sum_{j=2}^7\beta_{3j}I_{\text{country lockdown}=j}(x_{3i}) \\
+&+ \sum_{j=2}^5\beta_{4j}I_{\text{marital}=j}(x_{4i})
++ \sum_{j=2}^7\beta_{5j}I_{\text{smoking}=j}(x_{5i})
++ \beta_{6}I_{\text{fruits}=2}(x_{6i}) \\
+&+ \beta_{7} x_{7i}
++ \beta_{8}I_{\text{shielded}=2}(x_{8i}) 
++ \sum_{j=1}^7 \beta_{9_j}I_{\text{wk soc dist}=j}(x_{9i})
++ \beta_{10} I_{\text{athlete}=2}(x_{10i}) \\
+&+ \beta_{11} x_{11i}
++ \beta_{12} x_{12i}
++ \beta_{13} x_{13i}
++ \beta_{14} x_{14i}
++ \beta_{15} x_{15i}
++ \epsilon_i
+\\
+\end{align*}
+
+</font>
+
+<small>
+where 
+
+- $I_A$s are indicator variables, ($I_A(x)= 1$ if $x \in A$, or $0$ otherwise)
+- $x_{7i}$: hour_sleep of the i-th observation
+- $x_{11i}$: lockdown_bubble
+- $x_{12i}$: AIMS
+- $x_{13i}$: HADS
+- $x_{14i}$: RES
+- $x_{15i}$: LONE
+
+</small>
+
+
+
+#
+
+Setting each category and each continuous variable to its own group.
+
+For ease of notation we will use matrix $\mathbf{X}^{(g)}$ to denote the predictors corresponding to the $g$-th group with coefficient vector $\beta^{(g)}$, i.e. 
+
+\[\mathbf{X}^{(g)} = (\mathbf{X}_{g1}, \mathbf{X}_{g2}, ..., \mathbf{X}_{gp_g})\]
+\[\beta^{(g)} = (\beta_{g1}, \beta_{g2}, ..., \beta_{gp_g})^T.\]
+
+Then our objective function for grouped LASSO is:
+\[ \big | \big|y-\sum_{g=1}^G \mathbf{X}^{(g)}\beta^{(g)} \big |\big|_2^2 + \lambda \sum_{g=1}^G \sqrt{p_g}||\beta^{(g)}||_{2}\]
+
+
+
 
 # choosing lambda
 
@@ -276,7 +347,7 @@ model_full_col_group <- c(1, 2, 2, 2, 2, 2, 2,
 # data.frame(colnames(design_matrix_full), model_full_col_group) #for check
 ```
 
-```{r}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 # fit with cv
 model_full_lasso_cv <- cv.gglasso(
     design_matrix_full, response_full,
@@ -284,6 +355,9 @@ model_full_lasso_cv <- cv.gglasso(
     pred.loss = "L2",
     nfolds = 10)
 ```
+
+with 10-fold CV,
+
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 plot(model_full_lasso_cv)
 abline(v = log(0.03), col = "blue")
@@ -314,7 +388,9 @@ coeff_lasso[1:20, ] %>% as.data.frame()
 coeff_lasso[21:39, ] %>% as.data.frame()
 ```
 
-As a result (?):
+#
+
+The grouped lasso gives:
 
 MHC_SF_OVERALL ~ gender + age_group +
     fivfruitveg + week_soc_distancing +
