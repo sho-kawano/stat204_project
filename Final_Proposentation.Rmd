@@ -8,6 +8,8 @@ output:
     incremental: false
     reveal_options:
       slideNumber: T
+      width: 1280
+      height: 720
 ---
 
 ```{r, include=FALSE}
@@ -60,14 +62,14 @@ data$athlete <- factor(data$athlete)
 
 # Data Description: Numeric
 
-* Hours Sleep.  <small>Range: 1.5-10.5 hours</small>
-* Athlete Identification Index (AIMS). <small>Range: 1-7.</small>
-* Hospital Anxiety & Depression Scale (HADS). <small>Range: 0-36.</small>
-* Brief Resilience Scale  (RES). <small>Range: 6-30</small>
-* Loneliness Scale (LONE) <small>Range: 0-6</small>
-* *Response:* MHC-SF. Represents overall well-being. <small>Range: 2-70</small>
+* Hours Sleep.  <small>Theoretical: >0 hours / Realized: 1.5-10.5.</small>
+* Athlete Identification Index (AIMS). <small>Th & Re: 1-7.*</small>
+* Anxiety & Depression Scale (HADS). <small>Th: 0-42 / Re: 0-36*.</small>
+* Brief Resilience Scale  (RES). <small>Th: 0-30 /Re: 6-30*</small>
+* Loneliness Scale (LONE) <small>Th & Re: 0-6*</small>
+* *Response:* MHC-SF. Represents overall well-being. <small>Th: 0-84 / Re: 2-70 *</small>
 
-
+<small>* Theoretical/Realized Range</small>
 
 # Main Research Questions 
 
@@ -78,68 +80,86 @@ data$athlete <- factor(data$athlete)
 
 
 # EDA
+<style>
+.container{
+    display: flex;
+}
+.col{
+    flex: 1;
+}
+</style>
 
-MHC_SF VS QUARANTINED (WITH GENDER)
+<div class="container">
+<div class="col">
+
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 data %>% 
     mutate(gender = ifelse(gender==1, "Male", "Female"), 
            athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
-    mutate(Qurantined=shielded) %>% 
-    ggplot(aes(x=athlete, y=MHC_SF_OVERALL, color=Qurantined)) + 
-    geom_boxplot() + 
-    facet_grid(~gender) + xlab("") + theme_bw() #doesn't error occur?
+    mutate(shielded=ifelse(shielded==1, "Yes", "No")) %>% 
+    ggplot(aes(x=shielded, y=MHC_SF_OVERALL, color=athlete)) + 
+    geom_boxplot(show.legend = FALSE) + 
+    facet_grid(athlete~gender) + xlab("Quarantined") + theme_bw() #doesn't error occur?
 ```
+</div>
+<div class="col">
 
-#
 
-MHC_SF VS HADS (GENDER - ATHLETE)
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 data %>% 
     mutate(gender = ifelse(gender==1, "Male", "Female"), 
            athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
-    ggplot(aes(x=HADS_OVERALL, y=MHC_SF_OVERALL)) + geom_point(aes(color=athlete)) + 
+    ggplot(aes(x=week_soc_distancing, y=MHC_SF_OVERALL)) + geom_boxplot(aes(color=athlete), show.legend = FALSE) + 
+    facet_grid(athlete~gender) + theme_bw() +
+    geom_smooth(se=FALSE)
+```
+</div>
+</div>
+# EDA
+
+<style>
+.container{
+    display: flex;
+}
+.col{
+    flex: 1;
+}
+</style>
+
+<div class="container">
+<div class="col">
+
+MHC_SF ~ HADS 
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data %>% 
+    mutate(gender = ifelse(gender==1, "Male", "Female"), 
+           athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
+    ggplot(aes(x=HADS_OVERALL, y=MHC_SF_OVERALL)) + geom_point(aes(color=athlete), show.legend = FALSE) + 
     facet_grid(athlete~gender) + theme_bw() +
     geom_smooth(se=FALSE)
 ```
 
-#
+<small>Anxiety & Depression</small>
 
-MHC_SF VS SOC_DIST (GENDER - ATHLETE)
+</div>
+<div class="col">
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE}
-data %>% 
-    mutate(gender = ifelse(gender==1, "Male", "Female"), 
-           athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
-    ggplot(aes(x=week_soc_distancing, y=MHC_SF_OVERALL)) + geom_boxplot(aes(color=athlete)) + 
-    facet_grid(athlete~gender) + theme_bw() +
-    geom_smooth(se=FALSE)
-```
-
-#
-
-MHC_SF VS AGE_GROUP (GENDER - ATHLETE)
+MHC_SF ~ LONE 
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 data %>% 
     mutate(gender = ifelse(gender==1, "Male", "Female"), 
            athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
-    ggplot(aes(x=age_group, y=MHC_SF_OVERALL)) + geom_boxplot(aes(color=athlete)) + 
+    ggplot(aes(x=LONE_TOTAL, y=MHC_SF_OVERALL)) + geom_point(aes(color=athlete), show.legend = FALSE) + 
     facet_grid(athlete~gender) + theme_bw() +
     geom_smooth(se=FALSE)
 ```
+<small>Loneliness Index</small>
+</div>
+</div>
+Both are negatively correlated with MHC_SF.
 
-#
-
-MHC_SF VS LONE_TOTAL (GENDER - ATHLETE)
-
-```{r, echo=FALSE, warning=FALSE, message=FALSE}
-data %>% 
-    mutate(gender = ifelse(gender==1, "Male", "Female"), 
-           athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
-    ggplot(aes(x=LONE_TOTAL, y=MHC_SF_OVERALL)) + geom_point(aes(color=athlete)) + 
-    facet_grid(athlete~gender) + theme_bw() +
-    geom_smooth(se=FALSE)
-```
 
 
 # Collinearity 
