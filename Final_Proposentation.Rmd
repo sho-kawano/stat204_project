@@ -193,16 +193,29 @@ data %>% ggplot(aes(x=athlete, y=AIMS_TOTAL)) + geom_point(position="jitter") +
 
 # model selection
 
+- stepwise model-selection
+    - using 'step' function in R
 
-stepwise model-selection
-Removing variables with Collinearity Issues: RES & HADS (using AIC criterion)
-(only verbally: interaction problem)
+- Removing variables with Collinearity Issues
+    - AIMS & athlete: 'AIMS' is deleted by the stepwise selection
+    - RES & HADS: using AIC criterion, we delete 'RES'
+
+- possible interaction?
+    - Not exist. (through F-test)
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+final_model = lm(formula = MHC_SF_OVERALL ~ gender + age_group + week_soc_distancing + 
+    athlete + HADS_OVERALL + LONE_TOTAL, data = data[complete.cases(data), ])
+model_interaction = lm(formula = MHC_SF_OVERALL ~ (gender + age_group + week_soc_distancing + 
+    athlete + HADS_OVERALL + + LONE_TOTAL)^2, data = data[complete.cases(data), ])
+anova(final_model, model_interaction)
+```
 
 
 
+# Model
 
-# Model explanation (lm)
-
+<small> 
 \begin{align*}
 y_{i} = &\mu 
 + \beta_{1}I_{gender=2}(x_i)
@@ -214,21 +227,19 @@ y_{i} = &\mu
 + \epsilon_i \\
 \end{align*}
 
+where $\epsilon ~ N(0,\sigma^2)$, and
 
-where $I_A$s are indicator variables, ($I_A(x)= 1$ if $x \in A$, or $0$ otherwise), and
-$x_{13i}, x_{15i}$ are HADS and LONE of i-th point, respectively (the continuous variables).
+- $I_A$s are indicator variables ($I_A(x)= 1$ if $x \in A$, or $0$ otherwise)
+- $x_{13i}$: HADS of i-th point
+- $x_{15i}$: LONE
 
-We will do the standard residual analysis to check assumptions. 
+</small>
+
+
+
 
 # fitting
 
-add summary table
-anova table
-(verbally: F-test, t-test)
-
-```{r, echo=FALSE, warning=FALSE, message=FALSE}
-library(car)
-```
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 final_model = lm(formula = MHC_SF_OVERALL ~ gender + age_group + week_soc_distancing + 
     athlete + HADS_OVERALL + LONE_TOTAL, data = data[complete.cases(data), ])
@@ -237,12 +248,15 @@ final_model %>% summary()
 
 #
 
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(car)
+```
 ```{r}
 final_model %>% Anova()
 ```
 
 
-# fitting diagnosis
+# diagnosis
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 par(mfrow = c(2, 2))
@@ -251,7 +265,7 @@ plot(final_model)
 
 #
 
-(for the high residual point)
+For the high residual point,
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 par(mfrow = c(3, 2))
@@ -267,7 +281,7 @@ for(i in (names(final_model$model)[-1])) {
 
 #
 
-(heteroskedasticity)
+To check the heteroskedasticity,
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 data_without_na <- data[complete.cases(data), ]
@@ -278,15 +292,11 @@ n_lab_to_boxplot <- function(factor_var, y=1) {
         text(i, y, paste("n=", sum(factor_var == lev[i]), sep = ""))
     }
 }
-```
-
-#
-
-```{r, echo=FALSE, warning=FALSE, message=FALSE}
 plot(final_model$residuals ~ data_without_na$week_soc_distancing)  # <- hmm. but boxes are similar
 n_lab_to_boxplot(data_without_na$week_soc_distancing, y = 25) #we can guess what makes the problem
 
 ```
+
 
 #
 
@@ -294,19 +304,12 @@ n_lab_to_boxplot(data_without_na$week_soc_distancing, y = 25) #we can guess what
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 par(mfrow = c(1, 1)); plot(final_model, which = 4)
-
-# final_model$model[c(266, 301, 354), ] #but these
-# #or
-# data[c(296, 341, 405),]
 ```
 
 
 
 # Grouped Lasso model
-
-
- <font size="4">
-
+<small>
 \begin{align*}
 y_{i} = &\mu 
 + \beta_{1}I_{gender=2}(x_i)
@@ -328,40 +331,30 @@ y_{i} = &\mu
 \\
 \end{align*}
 
-</font>
-
-<small>
 where 
 
 - $I_A$s are indicator variables, ($I_A(x)= 1$ if $x \in A$, or $0$ otherwise)
 - $x_{7i}$: hour_sleep of the i-th observation
-- $x_{11i}$: lockdown_bubble
-- $x_{12i}$: AIMS
-- $x_{13i}$: HADS
-- $x_{14i}$: RES
-- $x_{15i}$: LONE
+- Likewise, $x_{11i}$: lockdown_bubble, $x_{12i}$: AIMS, $x_{13i}$: HADS, $x_{14i}$: RES, and $x_{15i}$: LONE
+
+with an error term $\epsilon_i$.
 
 </small>
 
 
 
-#
+# Grouped Lasso: fitting
 
-Setting each category and each continuous variable to its own group.
-
-For ease of notation we will use matrix $\mathbf{X}^{(g)}$ to denote the predictors corresponding to the $g$-th group with coefficient vector $\beta^{(g)}$, i.e. 
-
-\[\mathbf{X}^{(g)} = (\mathbf{X}_{g1}, \mathbf{X}_{g2}, ..., \mathbf{X}_{gp_g})\]
-\[\beta^{(g)} = (\beta_{g1}, \beta_{g2}, ..., \beta_{gp_g})^T.\]
+- Setting each category and each continuous variable to its own group.
+- Notation
+    - \(\mathbf{X}^{(g)} = (\mathbf{X}_{g1}, \mathbf{X}_{g2}, ..., \mathbf{X}_{gp_g})\)
+    - \(\beta^{(g)} = (\beta_{g1}, \beta_{g2}, ..., \beta_{gp_g})^T.\)
 
 Then our objective function for grouped LASSO is:
 \[ \big | \big|y-\sum_{g=1}^G \mathbf{X}^{(g)}\beta^{(g)} \big |\big|_2^2 + \lambda \sum_{g=1}^G \sqrt{p_g}||\beta^{(g)}||_{2}\]
 
 
-
-
-# choosing lambda
-
+# Choosing $\lambda$
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 # group lasso from full model
 library(gglasso)
@@ -391,7 +384,7 @@ model_full_lasso_cv <- cv.gglasso(
     nfolds = 10)
 ```
 
-with 10-fold CV,
+With 10-fold CV,
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 plot(model_full_lasso_cv)
@@ -401,39 +394,66 @@ text(log(0.03), 1, "lambda: 0.03", pos = 4, col = "blue")
 
 
 
-# Lasso fit result
-
-
+# Grouped Lasso: fitting result
 ```{r}
+library(gglasso)
 model_full_lasso_fit <- gglasso(
     design_matrix_full, response_full,
     lambda = 0.03,
     group = model_full_col_group, loss = "ls")
-
-model_full_lasso_fit$npasses
 ```
+
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
-
 coeff_lasso <- round(coef(model_full_lasso_fit), 3)
-coeff_lasso[1:20, ] %>% as.data.frame()
-
 ```
 
+#
+```{r}
+coeff_lasso[1:20, ] %>% as.data.frame()
+```
+
+#
 ```{r}
 coeff_lasso[21:39, ] %>% as.data.frame()
 ```
 
 #
 
-The grouped lasso gives:
+The grouped lasso gives the model with 20 nonzero coefficients:
+<small>
+\begin{align*}
+y_{i} = &\mu 
++ \beta_{1}I_{gender=2}(x_i)
++ \sum_{j=2}^7\beta_{2j}I_{\text{age grp}=j}(x_{2i})
++ \beta_{6}I_{\text{fruits}=2}(x_{6i})
++ \sum_{j=1}^7 \beta_{9_j}I_{\text{wk soc dist}=j}(x_{9i}) \\
+&+ \beta_{10} I_{\text{athlete}=2}(x_{10i})
++ \beta_{13} x_{13i}
++ \beta_{14} x_{14i}
++ \beta_{15} x_{15i}
++ \epsilon_i
+\\
+\end{align*}
 
+where 
+
+- $I_A$s are indicator variables, ($I_A(x)= 1$ if $x \in A$, or $0$ otherwise)
+- $x_{13i}$: HADS
+- $x_{14i}$: RES
+- $x_{15i}$: LONE
+
+with an error term $\epsilon_i$.
+
+
+Or,
 MHC_SF_OVERALL ~ gender + age_group +
     fivfruitveg + week_soc_distancing +
     athlete + HADS_OVERALL + RES_TOTAL + LONE_TOTAL
 
-#
-coeff plot
 
+</small>
+
+#
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 
 try_log_lambdas <- seq(-2.4, -4, by = -0.01)
@@ -469,7 +489,7 @@ text(-3.5, -0.2, "lambda=0.03")
 
 ```
 
-# compared
+# OLS vs Grouped Lasso
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 lasso_coeff <- coef(model_full_lasso_fit)[coef(model_full_lasso_fit) != 0]
