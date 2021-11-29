@@ -50,6 +50,7 @@ data$athlete <- factor(data$athlete)
 
 * Gender (Binary). <small>Male/Female</small>
 * Shielded (Quarantined). <small>Yes/No </small>
+* Five Fruit & Veg. <small>Yes/No </small>
 * Athlete/Non-Athlete
 * Marital Status  <small>5-level </small>
 * Age group <small>7-level & ordered. </small>
@@ -166,7 +167,6 @@ data %>%
 <small>Loneliness Index</small>
 </div>
 </div>
-Both are negatively correlated with MHC_SF.
 
 
 
@@ -209,15 +209,14 @@ ggarrange(plt1, plt2, ncol = 1, nrow = 2)
 
 # Model Selection
 
-- stepwise model-selection
-    - using 'step' function in R
+- Stepwise Model-Selection
+    - Using `step` function in R
 
 - Removing variables with Collinearity Issues
-    - AIMS & athlete: 'AIMS' is deleted by the stepwise selection
-    - RES & HADS: using AIC criterion, we delete 'RES'
+    - AIMS & athlete: `AIMS` is deleted by the stepwise selection
+    - RES & HADS: using AIC criterion, we delete `RES`
 
-- possible interaction?
-    - Not exist. (through F-test)
+- Interactions all insignificant (via F-test)
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 final_model = lm(formula = MHC_SF_OVERALL ~ gender + age_group + week_soc_distancing + 
@@ -455,15 +454,29 @@ model_full_lasso_fit <- gglasso(
 coeff_lasso <- round(coef(model_full_lasso_fit), 3)
 ```
 
-#
-```{r}
+<style>
+.container{
+    display: flex;
+}
+.col{
+    flex: 2;
+}
+</style>
+
+<div class="container">
+<div class="col">
+
+```{r echo=FALSE}
 coeff_lasso[1:20, ] %>% as.data.frame()
 ```
+</div>
+<div class="col">
 
-#
-```{r}
+```{r echo=FALSE}
 coeff_lasso[21:39, ] %>% as.data.frame()
 ```
+</div>
+</div>
 
 # Grouped Lasso Model (Revisited)
 
@@ -496,10 +509,15 @@ The grouped lasso gives the model with 20 nonzero coefficients.
 
 # ANCOVA vs Grouped Lasso
 
-- ANCOVA gives
-    - MHC_SF_OVERALL ~ gender + age_group + week_soc_distancing + athlete + HADS_OVERALL + LONE_TOTAL
-- Group Lasso gives
-    - MHC_SF_OVERALL ~ gender + age_group + fivfruitveg + week_soc_distancing + athlete + HADS_OVERALL + RES_TOTAL + LONE_TOTAL
+ANCOVA gives \newline
+`MHC_SF ~ gender + age_group + wk_soc_distancing` \newline
+`+ athlete + HADS + LONE`
+
+Group Lasso gives \newline
+`MHC_SF ~ gender + age_group + fivfruitveg + ` \newline
+`wk_soc_distancing+ athlete + HADS + RES + LONE`
+
+The only difference is the Five Fruits & Veggies Variable. 
 
 
 # Discussion 
