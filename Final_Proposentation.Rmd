@@ -1,5 +1,5 @@
 ---
-title: "Project Proposal"
+title: "Final Project Presentation"
 author: "Seokjun Choi and Sho Kawano"
 date: "`r Sys.Date()`"
 output:
