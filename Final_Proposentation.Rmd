@@ -238,7 +238,7 @@ y_{i} = &\mu
 + \beta_{1}I_{gender=2}(x_i)
 + \sum_{j=2}^7\beta_{2j}I_{\text{age grp}=j}(x_{2i}) \\
 &+ \sum_{j=1}^7 \beta_{9_j}I_{\text{wk soc dist}=j}(x_{9i})
-+ \beta_10 I_{\text{athlete}=2}(x_{10i}) \\
++ \beta_{10} I_{\text{athlete}=2}(x_{10i}) \\
 &+ \beta_{13} x_{13i}
 + \beta_{15} x_{15i}
 + \epsilon_i \\
