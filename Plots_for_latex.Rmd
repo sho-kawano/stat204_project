@@ -1,0 +1,273 @@
+---
+title: "Slides"
+author: "Seokjun Choi and Sho Kawano"
+date: "`r Sys.Date()`"
+output:
+  revealjs::revealjs_presentation: 
+    theme: serif
+    incremental: false
+    reveal_options:
+      slideNumber: T
+      width: 1280
+      height: 720
+---
+
+```{r, include=FALSE}
+library(tidyverse)
+# library(gridExtra)
+data <- read.csv("MH_survey_only_higher_index.csv",
+    na.strings = "NA")
+names(data)
+names(data)[1] <- "gender"
+
+data <- data[, -c(17:22)]
+
+
+# Assigning factors
+data$gender <- factor(data$gender)
+data$age_group <- factor(data$age_group)
+data$country_lockdown <- factor(data$country_lockdown)
+data$marital <- factor(data$marital)
+data$smoking <- factor(data$smoking)
+data$fivfruitveg <- factor(data$fivfruitveg)
+data$shielded <- factor(data$shielded)
+data$week_soc_distancing <- factor(data$week_soc_distancing)
+data$athlete <- factor(data$athlete)
+```
+
+
+# Correllogram 
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(corrplot)
+library(RColorBrewer)
+
+cor_tbl = data %>% select(-MHC_SF_OVERALL) %>%  
+    mutate_each(as.numeric)  %>% na.omit() %>% cor()
+
+corrplot(cor_tbl, type="upper", order="hclust", method="color", tl.cex=0.8)
+dev.copy(png, "~/coding/stat204_project/plots/colliearity1.png")
+```
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(ggpubr)
+plt1 = data %>% ggplot(aes(x=RES_TOTAL, y=HADS_OVERALL)) + geom_point(alpha=0.5) + geom_smooth(se=FALSE)+ theme_bw() + xlab("RES") + ylab("HADS")
+plt2 = data %>% ggplot(aes(x=athlete, y=AIMS_TOTAL)) + geom_point(position="jitter", alpha=0.5) + 
+  geom_boxplot(alpha=0.1, fill="blue", color="blue")+ theme_bw() +xlab("athlete") + ylab("AIMS")
+
+ggarrange(plt1, plt2, ncol = 1, nrow = 2)
+
+ggsave("plots/collinear2.png",
+  plot = ggarrange(plt1, plt2, ncol = 1, nrow = 2),
+  dpi = 300)
+```
+
+
+
+
+
+# Outlier?
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+par(mfrow = c(2, 1))
+for(i in c("LONE_TOTAL", "HADS_OVERALL")) {
+    now_data <- as.numeric(data[, i])
+      boxplot(now_data, xlab = i, horizontal = TRUE)
+      points(now_data[364], 1, pch = 19, col = "red", cex = 2)
+    
+}
+dev.copy(png, "~/coding/stat204_project/plots/outlier.png")
+```
+
+# Heteroskedasticity?
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data_without_na <- data[complete.cases(data), ]
+par(mfrow = c(1, 1))
+n_lab_to_boxplot <- function(factor_var, y=1) {
+    lev <- levels(factor_var)
+    for(i in seq_along(lev)) {
+        text(i, y, paste("n=", sum(factor_var == lev[i]), sep = ""))
+    }
+}
+plot(final_model$residuals ~ data_without_na$week_soc_distancing, xlab="Week Social Distancing", ylab="Residuals")  # <- hmm. but boxes are similar
+n_lab_to_boxplot(data_without_na$week_soc_distancing, y = 25) #we can guess what makes the problem
+dev.copy(png, "~/coding/stat204_project/plots/unequalvars.png")
+```
+
+
+# High Leverage?
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+par(mfrow = c(1, 1)); plot(final_model, which = 4)
+dev.copy(png, "~/coding/stat204_project/plots/cooks.png")
+```
+
+
+
+# Choosing $\lambda$ with 10-fold CV
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# group lasso from full model
+library(gglasso)
+# ?gglasso
+
+model_full <- lm(MHC_SF_OVERALL ~ ., data = data)
+design_matrix_full <- model.matrix(model_full)[, -1]
+conti_var_idx <- c(24, 33, 35, 36, 37, 38)
+design_matrix_full <- scale(model.matrix(model_full)[, -1])
+# for(i in conti_var_idx) {
+#     design_matrix_full[, i] <- scale(design_matrix_full[, i])
+# }
+response_full <- scale(model_full$model$MHC_SF_OVERALL)
+
+model_full_col_group <- c(1, 2, 2, 2, 2, 2, 2,
+    3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 7, 8,
+    9, 9, 9, 9, 9, 9, 9, 10, 11, 12, 13, 14, 15)
+# data.frame(colnames(design_matrix_full), model_full_col_group) #for check
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# fit with cv
+set.seed(20211128)
+model_full_lasso_cv <- cv.gglasso(
+    design_matrix_full, response_full,
+    group = model_full_col_group,
+    pred.loss = "L2",
+    nfolds = 10)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+plot(model_full_lasso_cv)
+abline(v = log(0.03), col = "blue")
+text(log(0.03), 1, "lambda: 0.03", pos = 4, col = "blue")
+dev.copy(png, "~/coding/stat204_project/plots/lasso1.png")
+```
+
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.height=6}
+
+dat = coeff_mat %>% t() %>% data.frame() 
+log.lambda = colnames(coeff_mat) %>% as.numeric()
+rownames(dat)=1:nrow(dat)
+dat$log.lambda = log.lambda
+tidy = dat %>% pivot_longer(-log.lambda, names_to="variable", values_to = "coefficient")
+
+# max_coef = tidy %>%
+#   group_by(variable) %>% 
+#   summarise(max_coef = max(abs(coefficient)))
+
+
+tidy = tidy %>% 
+  #left_join(max_coef, by="variable") %>% 
+ # mutate(group=ifelse(abs(max_coef)>0.05, ">0.05", ifelse(abs(max_coef)>0.02, ">0.02", "<0.02"))) %>% 
+  
+  mutate(group2 = ifelse(grepl("age_group", variable, fixed = TRUE),
+                                       "age_group",
+                                 ifelse(grepl("country", variable, fixed = TRUE),
+                                        "country_lockdown",
+                                ifelse(grepl("marital", variable, fixed = TRUE),
+                                        "marital",
+                                ifelse(grepl("smoking", variable, fixed = TRUE),
+                                       "smoking",
+                                ifelse(grepl("week", variable, fixed = TRUE),
+                                       "week_soc_dist", "other"
+                        )))))) %>%
+              mutate(group2=factor(group2))
+
+plot1 = tidy %>% 
+  ggplot(aes(x=log.lambda, y=coefficient)) + 
+  facet_wrap(~group2, scales = "free") +
+  xlim(c(-4, -3)) + 
+  geom_line(aes(color=variable), alpha=0.8, show.legend = FALSE) + theme_bw() 
+  # geom_text(aes(x=-3.5, y= med_coef, label=variable, color=variable), 
+  #           show.legend = FALSE, angle=20,
+  #           data=tidy %>% filter(group2 =="other"))
+
+ggsave("plots/lasso2.png",
+  plot = plot1,
+  dpi = 300)
+```
+
+
+
+
+# NOT INCLUDED 
+
+# EDA (may not use )
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data %>% 
+    mutate(gender = ifelse(gender==1, "Male", "Female"), 
+           athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
+    mutate(shielded=ifelse(shielded==1, "Yes", "No")) %>% 
+    ggplot(aes(x=shielded, y=MHC_SF_OVERALL, color=athlete)) + 
+    geom_boxplot(show.legend = FALSE) + 
+    facet_grid(athlete~gender) + xlab("") + theme_bw() #doesn't error occur?
+
+
+```
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data %>% 
+    mutate(gender = ifelse(gender==1, "Male", "Female"), 
+           athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
+   mutate(Week_Soc_Dist = ifelse(week_soc_distancing==0, "0", 
+                                 ifelse(week_soc_distancing==1, "1-3", 
+                                  ifelse(week_soc_distancing==2, "4-6", 
+                                  ifelse(week_soc_distancing==3, "7-9", 
+                                  ifelse(week_soc_distancing==4, "10-12", 
+                                  ifelse(week_soc_distancing==5, "13-15", 
+                                  ifelse(week_soc_distancing==6, "16-18", "19-21")))))))) %>% 
+  mutate(Week_Soc_Dist = factor(Week_Soc_Dist, levels=c("0", "1-3", "4-6", "7-9", "10-12", "13-15", "16-18", "19-21"))) %>% 
+    ggplot(aes(x=Week_Soc_Dist, y=MHC_SF_OVERALL)) + geom_boxplot(aes(color=athlete), show.legend = FALSE) + xlab("") +
+    facet_grid(athlete~gender) + theme_bw() + 
+    geom_smooth(se=FALSE)
+```
+
+
+# EDA
+
+<style>
+.container{
+    display: flex;
+}
+.col{
+    flex: 1;
+}
+</style>
+
+<div class="container">
+<div class="col">
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data %>% 
+    mutate(gender = ifelse(gender==1, "Male", "Female"), 
+           athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
+    ggplot(aes(x=HADS_OVERALL, y=MHC_SF_OVERALL)) + geom_point(aes(color=athlete), show.legend = FALSE) + 
+    facet_grid(athlete~gender) + theme_bw() +
+    geom_smooth(se=FALSE)
+```
+
+<small>Anxiety & Depression</small>
+
+</div>
+<div class="col">
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+data %>% 
+    mutate(gender = ifelse(gender==1, "Male", "Female"), 
+           athlete = ifelse(athlete==1, "Athlete", "Non-Athlete")) %>% 
+    ggplot(aes(x=LONE_TOTAL, y=MHC_SF_OVERALL)) + geom_point(aes(color=athlete), show.legend = FALSE) + 
+    facet_grid(athlete~gender) + theme_bw() +
+    geom_smooth(se=FALSE)
+```
+<small>Loneliness Index</small>
+</div>
+</div>
+
