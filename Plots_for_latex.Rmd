@@ -64,6 +64,32 @@ ggsave("plots/collinear2.png",
 ```
 
 
+# ANCOVA Model: Fitting
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+final_model = lm(formula = MHC_SF_OVERALL ~ gender + age_group + week_soc_distancing + 
+    athlete + HADS_OVERALL + LONE_TOTAL, data = data[complete.cases(data), ])
+final_model %>% summary()
+```
+
+#
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(car)
+```
+
+```{r}
+final_model %>% Anova()
+```
+
+
+# ANCOVA Model: Diagnosis
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+par(mfrow = c(2, 2))
+plot(final_model)
+dev.copy(png, "~/coding/stat204_project/plots/residual.png")
+```
 
 
 
