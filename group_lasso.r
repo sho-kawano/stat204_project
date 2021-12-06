@@ -62,7 +62,9 @@ names(model_full_lasso_fit)
 coef(model_full_lasso_fit)
 model_full_lasso_fit$npasses
 lasso_coeff <- coef(model_full_lasso_fit)[coef(model_full_lasso_fit) != 0]
+names(coef(model_full_lasso_fit)[coef(model_full_lasso_fit) != 0])
 lasso_coeff
+round(coef(model_full_lasso_fit), 5)
 # (Intercept)           9.268054e-17
 # gender2               5.394306e-02
 # age_group2           -5.538053e-03
@@ -83,7 +85,6 @@ lasso_coeff
 # HADS_OVERALL         -4.043449e-01
 # RES_TOTAL             1.132735e-01
 # LONE_TOTAL           -2.884045e-01
-
 
 # lambda vs coeff plots
 try_log_lambdas <- seq(-2.4, -4, by = -0.01)
