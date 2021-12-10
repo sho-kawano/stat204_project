@@ -49,6 +49,8 @@ The final model is pretty different than what we had before.
 
 ```{r}
 data_without_na <- data[complete.cases(data), ]
+dim(data_without_na)
+
 model_full <- lm(MHC_SF_OVERALL ~ ., data = data[complete.cases(data), ])
 summary(model_full)
 

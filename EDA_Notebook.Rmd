@@ -43,6 +43,7 @@ n_lab_to_boxplot <- function(factor_var) {
     }
 }
 
+par(mfrow= c(1,1))
 
 plot(MHC_SF_OVERALL ~ gender, data = data)
 n_lab_to_boxplot(data$gender)

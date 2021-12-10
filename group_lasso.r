@@ -124,6 +124,17 @@ abline(v = log(0.03), lty = 2); text(-3.5, -0.2, "lambda=0.03")
 after_lasso_lm_fit_non_scaled <- lm(MHC_SF_OVERALL ~ gender + age_group +
     fivfruitveg + week_soc_distancing +
     athlete + HADS_OVERALL + RES_TOTAL + LONE_TOTAL, data = data)
+summary(after_lasso_lm_fit_non_scaled)
+
+
+after_lasso_lm_fit_non_scaled_wo_RES <- lm(MHC_SF_OVERALL ~ gender + age_group +
+    fivfruitveg + 
+    week_soc_distancing +
+    athlete + HADS_OVERALL + LONE_TOTAL, data = data[complete.cases(data), ])
+summary(after_lasso_lm_fit_non_scaled_wo_RES)
+AIC(after_lasso_lm_fit_non_scaled_wo_RES)
+BIC(after_lasso_lm_fit_non_scaled_wo_RES)
+
 scaled <- scale(model.matrix(after_lasso_lm_fit_non_scaled)[, -1])
 response_al <- scale(after_lasso_lm_fit_non_scaled$model$MHC_SF_OVERALL)
 after_lasso_lm_fit <- lm(response_al ~ scaled)
